@@ -465,6 +465,176 @@ Available dashboards:
 - Check network connectivity to Polygon servers
 - Ensure date format is YYYY-MM-DD
 
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   REAL-TIME DATA INGESTION LAYER                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  Exchange 1  │  │  Exchange 2  │  │  Exchange 3  │  │  Dark Pools  │  │   Polygon.io │  │
+│  │  (Nanosec)   │  │  (Nanosec)   │  │  (Nanosec)   │  │  (Nanosec)   │  │  Flat Files  │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  │
+│         └──────────────────┴──────────────────┴──────────────────┴────────────────┘          │
+│                                                │                                              │
+│                                    ┌───────────▼───────────┐                                  │
+│                                    │   Network Interface   │                                  │
+│                                    │   (Kernel Bypass)     │                                  │
+│                                    │   DPDK/Solarflare    │                                  │
+│                                    └───────────┬───────────┘                                  │
+└─────────────────────────────────────────────────┼─────────────────────────────────────────────┘
+                                                  │
+┌─────────────────────────────────────────────────▼─────────────────────────────────────────────┐
+│                                        VERTICA DATABASE                                        │
+│                                    (Same AWS EC2 Instance)                                     │
+│                                                                                                │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────────┐ │
+│  │                                   STREAMING TABLES                                        │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │ │
+│  │  │   TRADES    │  │   QUOTES    │  │  ORDER_BOOK │  │   IMBALANCE │  │   SIGNALS   │  │ │
+│  │  │ (Nanosec TS)│  │ (Nanosec TS)│  │ (Nanosec TS)│  │ (Nanosec TS)│  │ (Nanosec TS)│  │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │ │
+│  └──────────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────────┐ │
+│  │                              TRIGGER MECHANISM (3 MODES)                                  │ │
+│  │                                                                                           │ │
+│  │  1. UDx TRIGGERS (Fastest - In-Process)                                                  │ │
+│  │     CREATE TRIGGER on_trade_insert AFTER INSERT ON trades                               │ │
+│  │     WHEN (NEW.volume > threshold) EXECUTE PROCEDURE run_microstructure()                 │ │
+│  │                                                                                           │ │
+│  │  2. CONTINUOUS QUERY (Near Real-time)                                                    │ │
+│  │     CREATE CONTINUOUS QUERY cq_microstructure AS                                         │ │
+│  │     SELECT ANALYZE_WINDOW() OVER (ORDER BY timestamp RANGE '1 second')                   │ │
+│  │                                                                                           │ │
+│  │  3. EXTERNAL PROCEDURE (Direct Memory Access)                                             │ │
+│  │     CREATE PROCEDURE trigger_microstructure() AS EXTERNAL                                │ │
+│  │     NAME 'microstructure_orchestrator.so!process_batch'                                  │ │
+│  └──────────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────────┐ │
+│  │                          SHARED MEMORY BUFFER (HUGE PAGES)                                │ │
+│  │                               Ring Buffer (Lock-free)                                     │ │
+│  │                              [64GB Pinned Memory Pool]                                    │ │
+│  └────────────────────────────────────┬──────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────┼────────────────────────────────────────────────────────┘
+                                        │
+┌───────────────────────────────────────▼────────────────────────────────────────────────────────┐
+│                           MICROSTRUCTURE ORCHESTRATION LAYER                                    │
+│                                 (Same EC2 Instance)                                             │
+│                                                                                                 │
+│  ┌────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                         ORCHESTRATOR (C++ Master Process)                               │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
+│  │  │   Scheduler  │  │ Load Balancer│  │ Memory Pool  │  │ Result Merger│              │   │
+│  │  │  (Priority)  │  │ (GPU/CPU)    │  │  Manager     │  │  & Writer   │              │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘              │   │
+│  └────────────────────────────────────┬────────────────────────────────────────────────────┘   │
+│                                       │                                                        │
+│  ┌────────────────────────────────────▼────────────────────────────────────────────────────┐   │
+│  │                              55 MICROSTRUCTURE MODULES                                  │   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 1: PRICE DISCOVERY (GPU) ──────────────────────────┐│   │
+│  │  │ [1] Variance Ratio  [2] Hasbrouck Info Share  [3] Gonzalo-Granger  [4] MID Quote    ││   │
+│  │  │ [5] Weighted Mid     [6] Lee-Ready Algorithm  [7] Tick Test        [8] Quote Rule   ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 2: LIQUIDITY METRICS (SIMD) ───────────────────────┐│   │
+│  │  │ [9] Bid-Ask Spread  [10] Effective Spread  [11] Realized Spread  [12] Kyle's Lambda ││   │
+│  │  │ [13] Amihud ILLIQ   [14] Roll Measure      [15] LOB Imbalance    [16] Quote Depth   ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 3: VOLATILITY (GPU) ───────────────────────────────┐│   │
+│  │  │ [17] Realized Vol   [18] GARCH           [19] HAR-RV          [20] Jump Detection   ││   │
+│  │  │ [21] Bipower Var    [22] Integrated Var  [23] Noise Variance  [24] Spot Volatility  ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 4: MARKET QUALITY (SIMD) ──────────────────────────┐│   │
+│  │  │ [25] Autocorrelation [26] Trade Classification [27] PIN Model  [28] VPIN            ││   │
+│  │  │ [29] Order Flow Tox  [30] Execution Shortfall  [31] Price Impact [32] Market Depth  ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 5: CROSS-MARKET (GPU) ─────────────────────────────┐│   │
+│  │  │ [33] Cointegration  [34] Lead-Lag Ratio    [35] Common Factor  [36] Spillover Index ││   │
+│  │  │ [37] Granger Cause  [38] Transfer Entropy  [39] Partial Corr   [40] Dynamic Corr    ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 6: FRAGMENTATION (SIMD) ───────────────────────────┐│   │
+│  │  │ [41] Frag Index     [42] Venue Analysis    [43] Dark Pool %    [44] Lit/Dark Ratio  ││   │
+│  │  │ [45] SIP vs Direct  [46] Latency Arb       [47] Queue Position [48] Cancel-Replace  ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                                          │   │
+│  │  ┌─────────────────────────── GROUP 7: REGULATORY (CPU) ───────────────────────────────┐│   │
+│  │  │ [49] NBBO Compliance [50] Reg NMS Metrics  [51] MiFID II TCA   [52] Best Ex Analysis││   │
+│  │  │ [53] Market Abuse    [54] Layering Detect  [55] Spoofing Score                       ││   │
+│  │  └───────────────────────────────────────────────────────────────────────────────────────┘│   │
+│  └────────────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                                 │
+│  ┌────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                            EXECUTION ENVIRONMENT                                        │   │
+│  │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐                     │   │
+│  │  │   8x NVIDIA A100 │  │   64 CPU Cores   │  │   AVX-512 SIMD   │                     │   │
+│  │  │   (Multi-GPU)    │  │   (AMD EPYC)     │  │   Instructions    │                     │   │
+│  │  └──────────────────┘  └──────────────────┘  └──────────────────┘                     │   │
+│  └────────────────────────────────────────────────────────────────────────────────────────┘   │
+└───────────────────────────────────────┬────────────────────────────────────────────────────────┘
+                                        │
+┌───────────────────────────────────────▼────────────────────────────────────────────────────────┐
+│                                 RESULT AGGREGATION LAYER                                        │
+│                                                                                                 │
+│  ┌────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                          RESULT BUFFER (Lock-free Queue)                                │   │
+│  │                    Metrics are written back via DMA to Vertica                          │   │
+│  └────────────────────────────────────┬────────────────────────────────────────────────────┘   │
+│                                        │                                                        │
+│                          ┌─────────────▼──────────────┐                                        │
+│                          │   VERTICA RESULTS TABLES   │                                        │
+│                          │  - microstructure_metrics  │                                        │
+│                          │  - efficiency_scores       │                                        │
+│                          │  - liquidity_indicators    │                                        │
+│                          │  - regulatory_compliance   │                                        │
+│                          └─────────────┬──────────────┘                                        │
+└────────────────────────────────────────┼────────────────────────────────────────────────────────┘
+                                        │
+┌───────────────────────────────────────▼────────────────────────────────────────────────────────┐
+│                                   DOWNSTREAM CONSUMERS                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │Trading Engine│  │Risk Analytics│  │   Dashboards │  │ Regulatory   │  │Research Tools│   │
+│  │ (<100μs lat) │  │  (Real-time) │  │   (Grafana)  │  │  Reporting   │  │   (Python)   │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+TRIGGER FLOW DETAIL:
+═══════════════════
+
+1. DATA ARRIVAL (T+0ns):
+   Exchange Data → Network Card → Kernel Bypass → Vertica Streaming Insert
+
+2. TRIGGER ACTIVATION (T+100ns):
+   Vertica UDx Trigger Fires → Shared Memory Write → Orchestrator Notification
+
+3. ORCHESTRATION (T+500ns):
+   Orchestrator reads shared memory pointer → Determines which modules to run based on:
+   - Data type (trades/quotes/orders)
+   - Market conditions (volatility regime)
+   - Regulatory requirements
+   - System load
+
+4. PARALLEL EXECUTION (T+1μs to T+10μs):
+   - GPU modules: Batch processed on available GPUs
+   - SIMD modules: Distributed across CPU cores
+   - Dependencies resolved via DAG scheduler
+
+5. RESULT WRITEBACK (T+15μs):
+   Results → DMA transfer → Vertica tables → Downstream systems
+
+OPTIMIZATION STRATEGIES:
+════════════════════════
+
+• ZERO-COPY: Data stays in shared memory, only pointers passed
+• NUMA-AWARE: Pin processes to specific NUMA nodes
+• GPU PERSISTENCE: Keep GPU kernels warm, avoid initialization overhead
+• BATCH COALESCING: Combine multiple triggers within time window
+• PRIORITY QUEUES: Critical metrics (e.g., regulatory) processed first
+• CIRCUIT BREAKERS: Skip non-critical modules during high load
+• INCREMENTAL COMPUTE: Only recalculate affected metrics on updates
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
@@ -489,3 +659,6 @@ If you use this software in your research, please cite:
 ## Contact
 
 For questions and support, please open an issue on GitHub or contact the development team.
+
+
+
