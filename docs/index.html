@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Microstructure Architecture with Vertica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #fff;
+            overflow-x: auto;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        .architecture-layer {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .architecture-layer:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 255, 255, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+        }
+        
+        .layer-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .component {
+            background: linear-gradient(135deg, rgba(0, 128, 255, 0.1) 0%, rgba(0, 255, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .component::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #0080ff, #00ffff);
+            border-radius: 8px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .component:hover::before {
+            opacity: 1;
+        }
+        
+        .component:hover {
+            transform: scale(1.05);
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+        
+        .gpu-component {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 128, 0.1) 100%);
+            border-color: rgba(0, 255, 128, 0.4);
+        }
+        
+        .simd-component {
+            background: linear-gradient(135deg, rgba(255, 128, 0, 0.1) 0%, rgba(255, 200, 0, 0.1) 100%);
+            border-color: rgba(255, 200, 0, 0.4);
+        }
+        
+        .flow-arrow {
+            text-align: center;
+            font-size: 2em;
+            color: #00ffff;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(5px); }
+        }
+        
+        .microstructure-modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .module-group {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .module-group-title {
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .module-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .module-item {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+        
+        .module-item:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .trigger-mechanism {
+            background: linear-gradient(135deg, rgba(255, 0, 128, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 2px solid rgba(255, 0, 255, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .trigger-option {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #ff00ff;
+            border-radius: 4px;
+        }
+        
+        .latency-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ff00, #00ff88);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+        
+        .interactive-btn {
+            background: linear-gradient(45deg, #0080ff, #00ffff);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .interactive-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-time Microstructure Architecture</h1>
+        
+        <!-- Data Ingestion Layer -->
+        <div class="architecture-layer">
+            <div class="layer-title">📡 Data Ingestion Layer</div>
+            <div class="components-grid">
+                <div class="component">Exchange 1<br><small>Nanosecond</small></div>
+                <div class="component">Exchange 2<br><small>Nanosecond</small></div>
+                <div class="component">Exchange 3<br><small>Nanosecond</small></div>
+                <div class="component">Dark Pools<br><small>Nanosecond</small></div>
+                <div class="component">Polygon.io<br><small>Flat Files</small></div>
+            </div>
+        </div>
+        
+        <div class="flow-arrow">⬇</div>
+        
+        <!-- Vertica Database -->
+        <div class="architecture-layer">
+            <div class="layer-title">🗄️ Vertica Database (AWS EC2 Instance)</div>
+            <div class="components-grid">
+                <div class="component">TRADES<br><small>Nanosec TS</small></div>
+                <div class="component">QUOTES<br><small>Nanosec TS</small></div>
+                <div class="component">ORDER_BOOK<br><small>Nanosec TS</small></div>
+                <div class="component">IMBALANCE<br><small>Nanosec TS</small></div>
+                <div class="component">SIGNALS<br><small>Nanosec TS</small></div>
+            </div>
+            
+            <div class="trigger-mechanism">
+                <div style="font-weight: bold; color: #ff00ff; margin-bottom: 10px;">⚡ TRIGGER MECHANISMS</div>
+                <div class="trigger-option">
+                    1. UDx Triggers (In-Process) <span class="latency-badge">~100ns</span>
+                    <pre style="margin-top: 5px; font-size: 0.85em; color: #888;">CREATE TRIGGER on_trade AFTER INSERT ON trades</pre>
+                </div>
+                <div class="trigger-option">
+                    2. Continuous Query <span class="latency-badge">~1μs</span>
+                    <pre style="margin-top: 5px; font-size: 0.85em; color: #888;">CREATE CONTINUOUS QUERY ANALYZE_WINDOW()</pre>
+                </div>
+                <div class="trigger-option">
+                    3. External Procedure <span class="latency-badge">~500ns</span>
+                    <pre style="margin-top: 5px; font-size: 0.85em; color: #888;">EXTERNAL 'microstructure.so!process_batch'</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flow-arrow">⬇</div>
+        
+        <!-- Shared Memory -->
+        <div class="architecture-layer" style="background: rgba(128, 0, 255, 0.1); border-color: rgba(128, 0, 255, 0.4);">
+            <div class="layer-title">💾 Shared Memory Buffer (64GB Huge Pages)</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">Zero</div>
+                    <div class="stat-label">Copy Operations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">Lock-free</div>
+                    <div class="stat-label">Ring Buffer</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">DMA</div>
+                    <div class="stat-label">Direct Access</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flow-arrow">⬇</div>
+        
+        <!-- Microstructure Modules -->
+        <div class="architecture-layer">
+            <div class="layer-title">🔬 55 Microstructure Modules</div>
+            
+            <div class="microstructure-modules">
+                <div class="module-group">
+                    <div class="module-group-title">🚀 Price Discovery (GPU)</div>
+                    <div class="module-list">
+                        <div class="module-item gpu-component">Variance Ratio</div>
+                        <div class="module-item gpu-component">Hasbrouck Info</div>
+                        <div class="module-item gpu-component">Gonzalo-Granger</div>
+                        <div class="module-item gpu-component">MID Quote</div>
+                        <div class="module-item gpu-component">Weighted Mid</div>
+                        <div class="module-item gpu-component">Lee-Ready</div>
+                        <div class="module-item gpu-component">Tick Test</div>
+                        <div class="module-item gpu-component">Quote Rule</div>
+                    </div>
+                </div>
+                
+                <div class="module-group">
+                    <div class="module-group-title">💧 Liquidity Metrics (SIMD)</div>
+                    <div class="module-list">
+                        <div class="module-item simd-component">Bid-Ask Spread</div>
+                        <div class="module-item simd-component">Effective Spread</div>
+                        <div class="module-item simd-component">Realized Spread</div>
+                        <div class="module-item simd-component">Kyle's Lambda</div>
+                        <div class="module-item simd-component">Amihud ILLIQ</div>
+                        <div class="module-item simd-component">Roll Measure</div>
+                        <div class="module-item simd-component">LOB Imbalance</div>
+                        <div class="module-item simd-component">Quote Depth</div>
+                    </div>
+                </div>
+                
+                <div class="module-group">
+                    <div class="module-group-title">📊 Volatility (GPU)</div>
+                    <div class="module-list">
+                        <div class="module-item gpu-component">Realized Vol</div>
+                        <div class="module-item gpu-component">GARCH</div>
+                        <div class="module-item gpu-component">HAR-RV</div>
+                        <div class="module-item gpu-component">Jump Detection</div>
+                        <div class="module-item gpu-component">Bipower Var</div>
+                        <div class="module-item gpu-component">Integrated Var</div>
+                        <div class="module-item gpu-component">Noise Variance</div>
+                        <div class="module-item gpu-component">Spot Volatility</div>
+                    </div>
+                </div>
+                
+                <div class="module-group">
+                    <div class="module-group-title">⚖️ Market Quality (SIMD)</div>
+                    <div class="module-list">
+                        <div class="module-item simd-component">Autocorrelation</div>
+                        <div class="module-item simd-component">Trade Class</div>
+                        <div class="module-item simd-component">PIN Model</div>
+                        <div class="module-item simd-component">VPIN</div>
+                        <div class="module-item simd-component">Order Flow Tox</div>
+                        <div class="module-item simd-component">Exec Shortfall</div>
+                        <div class="module-item simd-component">Price Impact</div>
+                        <div class="module-item simd-component">Market Depth</div>
+                    </div>
+                </div>
+                
+                <div class="module-group">
+                    <div class="module-group-title">🔗 Cross-Market (GPU)</div>
+                    <div class="module-list">
+                        <div class="module-item gpu-component">Cointegration</div>
+                        <div class="module-item gpu-component">Lead-Lag Ratio</div>
+                        <div class="module-item gpu-component">Common Factor</div>
+                        <div class="module-item gpu-component">Spillover Index</div>
+                        <div class="module-item gpu-component">Granger Cause</div>
+                        <div class="module-item gpu-component">Transfer Entropy</div>
+                        <div class="module-item gpu-component">Partial Corr</div>
+                        <div class="module-item gpu-component">Dynamic Corr</div>
+                    </div>
+                </div>
+                
+                <div class="module-group">
+                    <div class="module-group-title">🔍 Regulatory (CPU)</div>
+                    <div class="module-list">
+                        <div class="module-item">NBBO Compliance</div>
+                        <div class="module-item">Reg NMS</div>
+                        <div class="module-item">MiFID II TCA</div>
+                        <div class="module-item">Best Execution</div>
+                        <div class="module-item">Market Abuse</div>
+                        <div class="module-item">Layering Detect</div>
+                        <div class="module-item">Spoofing Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flow-arrow">⬇</div>
+        
+        <!-- Hardware Resources -->
+        <div class="architecture-layer">
+            <div class="layer-title">⚙️ Execution Environment</div>
+            <div class="components-grid">
+                <div class="component gpu-component">8x NVIDIA A100<br><small>Multi-GPU</small></div>
+                <div class="component simd-component">64 CPU Cores<br><small>AMD EPYC</small></div>
+                <div class="component simd-component">AVX-512 SIMD<br><small>Instructions</small></div>
+            </div>
+        </div>
+        
+        <div class="flow-arrow">⬇</div>
+        
+        <!-- Results & Consumers -->
+        <div class="architecture-layer">
+            <div class="layer-title">📈 Downstream Consumers</div>
+            <div class="components-grid">
+                <div class="component">Trading Engine<br><small>&lt;100μs latency</small></div>
+                <div class="component">Risk Analytics<br><small>Real-time</small></div>
+                <div class="component">Dashboards<br><small>Grafana</small></div>
+                <div class="component">Regulatory<br><small>Reporting</small></div>
+                <div class="component">Research Tools<br><small>Python/R</small></div>
+            </div>
+        </div>
+        
+        <!-- Performance Stats -->
+        <div class="architecture-layer" style="background: rgba(0, 255, 0, 0.1); border-color: rgba(0, 255, 0, 0.4);">
+            <div class="layer-title">⚡ Performance Metrics</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">100ns</div>
+                    <div class="stat-label">Trigger Latency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">15μs</div>
+                    <div class="stat-label">End-to-End</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">10M/s</div>
+                    <div class="stat-label">Events/Second</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">Zero</div>
+                    <div class="stat-label">Copy Overhead</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Interactive Controls -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="interactive-btn" onclick="simulateDataFlow()">Simulate Data Flow</button>
+            <button class="interactive-btn" onclick="showLatencyBreakdown()">Show Latency Breakdown</button>
+            <button class="interactive-btn" onclick="toggleModuleDetails()">Toggle Module Details</button>
+        </div>
+    </div>
+    
+    <script>
+        function simulateDataFlow() {
+            const layers = document.querySelectorAll('.architecture-layer');
+            layers.forEach((layer, index) => {
+                setTimeout(() => {
+                    layer.style.background = 'rgba(0, 255, 0, 0.2)';
+                    layer.style.borderColor = 'rgba(0, 255, 0, 0.8)';
+                    setTimeout(() => {
+                        layer.style.background = '';
+                        layer.style.borderColor = '';
+                    }, 500);
+                }, index * 200);
+            });
+        }
+        
+        function showLatencyBreakdown() {
+            alert(`Latency Breakdown:
+            
+• Network Ingestion: 50ns
+• Vertica Insert: 30ns
+• Trigger Fire: 20ns
+• Shared Memory Write: 10ns
+• Module Execution: 1-10μs
+• Result Writeback: 5μs
+            
+Total: ~15μs end-to-end`);
+        }
+        
+        function toggleModuleDetails() {
+            const modules = document.querySelectorAll('.module-item');
+            modules.forEach(module => {
+                module.style.display = module.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        // Add hover effects
+        document.querySelectorAll('.component').forEach(comp => {
+            comp.addEventListener('mouseenter', function() {
+                this.style.animation = 'pulse 0.5s infinite';
+            });
+            comp.addEventListener('mouseleave', function() {
+                this.style.animation = '';
+            });
+        });
+    </script>
+</body>
+</html>
