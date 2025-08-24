@@ -165,18 +165,9 @@ def autocorr_decay(returns, max_lag):
 
 The mathematics reveals that information efficiency is fundamentally about the **temporal dependence structure** of returns - efficient markets should have minimal predictability, leading to VR(h) ≈ 1 and rapidly decaying autocorrelations.
 
-
-
-
-
-
-
-
-
-
-
-
 # Project Strucure
+
+```
 
 project-structure/
 ├── CMakeLists.txt
@@ -212,3 +203,4 @@ project-structure/
 │   └── benchmark.py
 └── config/
     └── config.yaml
+```
