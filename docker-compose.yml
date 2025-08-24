@@ -1,0 +1,149 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  info-efficiency:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: info-efficiency:latest
+    container_name: info-efficiency-analyzer
+    
+    # GPU configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    # Environment variables
+    environment:
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
+      - CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+      - OMP_NUM_THREADS=32
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - TZ=America/New_York
+    
+    # Volumes for data persistence
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+    
+    # Network configuration
+    ports:
+      - "8080:8080"  # API port
+      - "6006:6006"  # TensorBoard port
+      - "8888:8888"  # Jupyter port
+    
+    # Resource limits
+    mem_limit: 64g
+    memswap_limit: 128g
+    cpus: '32'
+    
+    # Shared memory for multi-processing
+    shm_size: '32gb'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+    
+    networks:
+      - info-efficiency-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: info-efficiency-redis
+    command: redis-server --appendonly yes --maxmemory 8gb --maxmemory-policy lru
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - info-efficiency-network
+    restart: unless-stopped
+
+  # PostgreSQL for storing results
+  postgres:
+    image: postgres:15-alpine
+    container_name: info-efficiency-db
+    environment:
+      - POSTGRES_DB=info_efficiency
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - info-efficiency-network
+    restart: unless-stopped
+
+  # Grafana for monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: info-efficiency-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    networks:
+      - info-efficiency-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: info-efficiency-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - info-efficiency-network
+    restart: unless-stopped
+
+networks:
+  info-efficiency-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  redis-data:
+  postgres-data:
+  grafana-data:
+  prometheus-data:
