@@ -292,3 +292,400 @@ class MicrostructureUDx : public ScalarFunction {
 ```
 
 **Recommendation:** Use **Option A** - compile all 55 modules into a single `.so` library that the UDx loads, keeping everything in-process for true 100ns latency.
+
+
+Yes, `shm_segments[0]` maps to a **complete data structure** (not just prices), and `shouldRunModule` determines which modules to run based on data characteristics. Here's the detailed mapping:
+
+```cpp
+// Shared memory structure for EACH module
+struct MarketDataSegment {
+    // Input data section
+    float prices[MAX_ROWS];
+    int64_t timestamps[MAX_ROWS];
+    uint32_t volumes[MAX_ROWS];
+    float bid_prices[MAX_ROWS];
+    float ask_prices[MAX_ROWS];
+    uint32_t bid_sizes[MAX_ROWS];
+    uint32_t ask_sizes[MAX_ROWS];
+    
+    // Control section
+    size_t num_rows;
+    char symbol[16];
+    uint8_t data_type;  // TRADES, QUOTES, ORDERS
+    
+    // Output section
+    double variance_ratio;
+    double autocorrelation[100];
+    double bid_ask_spread;
+    double kyle_lambda;
+    // ... results for this module
+};
+
+class MicrostructureOrchestratorUDx : public ScalarFunction {
+private:
+    MarketDataSegment* shm_segments[55];  // Each module has full data structure
+    
+    // Module enable/disable logic based on data characteristics
+    bool shouldRunModule(int module_id, const float* prices, size_t num_rows) {
+        switch(module_id) {
+            case 0:  // Variance Ratio
+                return num_rows >= 100;  // Need minimum 100 points
+            
+            case 1:  // Hasbrouck Info Share
+                return hasMultipleVenues();  // Only if fragmented
+            
+            case 2:  // GARCH
+                return detectVolatilityRegime(prices) > threshold;
+            
+            case 3:  // Dark Pool Analysis
+                return data_type == DARK_POOL_TRADES;
+            
+            case 4:  // Regulatory modules
+                return isMarketHours() && isRegulatedSymbol();
+            
+            // ... conditions for all 55 modules
+        }
+    }
+    
+    // Function pointer table for all 55 modules
+    typedef void (*ModuleFunction)(MarketDataSegment*);
+    ModuleFunction module_functions[55] = {
+        triggerVarianceRatio,      // [0]
+        triggerHasbrouckInfo,       // [1]
+        triggerGonzaloGranger,      // [2]
+        triggerMIDQuote,            // [3]
+        triggerWeightedMid,         // [4]
+        triggerLeeReady,            // [5]
+        triggerBidAskSpread,        // [6]
+        triggerEffectiveSpread,     // [7]
+        triggerKyleLambda,          // [8]
+        triggerAmihudILLIQ,         // [9]
+        triggerRealizedVol,         // [10]
+        triggerGARCH,               // [11]
+        triggerHARRV,               // [12]
+        triggerJumpDetection,       // [13]
+        triggerAutocorrelation,     // [14]
+        triggerPINModel,            // [15]
+        triggerVPIN,                // [16]
+        triggerOrderFlowToxicity,   // [17]
+        triggerCointegration,       // [18]
+        triggerLeadLagRatio,        // [19]
+        // ... all 55 function pointers
+    };
+
+public:
+    virtual void processBlock(ServerInterface &srvInterface,
+                            BlockReader &args,
+                            BlockWriter &res) {
+        
+        // Get ALL data from Vertica
+        const float* prices = args.getFloatPtr(0);
+        const int64_t* timestamps = args.getIntPtr(1);
+        const uint32_t* volumes = args.getIntPtr(2);
+        const float* bid_prices = args.getFloatPtr(3);
+        const float* ask_prices = args.getFloatPtr(4);
+        size_t num_rows = args.getNumRows();
+        
+        // Copy ALL data to shared memory ONCE
+        for (int i = 0; i < 55; i++) {
+            if (shouldRunModule(i, prices, num_rows)) {
+                // Copy complete dataset to module's segment
+                memcpy(shm_segments[i]->prices, prices, num_rows * sizeof(float));
+                memcpy(shm_segments[i]->timestamps, timestamps, num_rows * sizeof(int64_t));
+                memcpy(shm_segments[i]->volumes, volumes, num_rows * sizeof(uint32_t));
+                shm_segments[i]->num_rows = num_rows;
+                
+                // Call module function directly (in-process)
+                module_functions[i](shm_segments[i]);
+            }
+        }
+        
+        // Aggregate results from all modules
+        res.setFloat(0, shm_segments[0]->variance_ratio);
+        res.setFloat(1, shm_segments[14]->autocorrelation[0]);
+        res.setFloat(2, shm_segments[6]->bid_ask_spread);
+        // ... collect all results
+    }
+};
+
+// Example module implementation
+void triggerVarianceRatio(MarketDataSegment* segment) {
+    // Direct CUDA call with shared memory pointer
+    cuda_variance_ratio<<<blocks, threads>>>(
+        segment->prices,
+        segment->timestamps,
+        segment->num_rows,
+        &segment->variance_ratio  // Write result directly
+    );
+    cudaDeviceSynchronize();
+}
+
+void triggerAutocorrelation(MarketDataSegment* segment) {
+    // SIMD AVX-512 computation
+    __m512d price_vec;
+    for (int lag = 1; lag <= 100; lag++) {
+        double acf = 0.0;
+        for (size_t i = 0; i < segment->num_rows - lag; i += 8) {
+            price_vec = _mm512_load_pd(&segment->prices[i]);
+            // ... compute autocorrelation
+        }
+        segment->autocorrelation[lag-1] = acf;
+    }
+}
+```
+
+**Key Points:**
+
+1. **`shm_segments[i]`** contains the complete `MarketDataSegment` structure with all market data, not just prices
+2. **`shouldRunModule()`** implements smart filtering logic to avoid unnecessary computation
+3. **`module_functions[]`** is a function pointer table mapping each module ID to its implementation
+4. All 55 modules read from and write to their designated shared memory segment
+5. Everything runs in-process (same address space) for true 100ns latency
+
+This way, you only copy data once and each module can access whatever fields it needs from the complete dataset.
+
+
+Yes, you can call individual microstructure modules independently through multiple approaches - here's how to expose each CUDA/SIMD module for direct access:
+
+```cpp
+// ============= APPROACH 1: Direct C API Export =============
+// Each module exposes its own C interface for independent calling
+
+// variance_ratio.cu - Compiled to libvariance_ratio.so
+extern "C" {
+    // Standalone function - can be called directly
+    double compute_variance_ratio(
+        const float* prices, 
+        const int64_t* timestamps, 
+        size_t n, 
+        int horizon
+    ) {
+        // Allocate GPU memory
+        float *d_prices;
+        cudaMalloc(&d_prices, n * sizeof(float));
+        cudaMemcpy(d_prices, prices, n * sizeof(float), cudaMemcpyHostToDevice);
+        
+        // Run CUDA kernel
+        double result;
+        variance_ratio_kernel<<<blocks, threads>>>(d_prices, n, horizon, &result);
+        cudaDeviceSynchronize();
+        
+        cudaFree(d_prices);
+        return result;
+    }
+}
+
+// autocorrelation.cpp - Compiled to libautocorr.so  
+extern "C" {
+    void compute_autocorrelation(
+        const double* returns,
+        size_t n,
+        size_t max_lag,
+        double* acf_output
+    ) {
+        // SIMD AVX-512 implementation
+        for (size_t lag = 1; lag <= max_lag; lag++) {
+            __m512d sum = _mm512_setzero_pd();
+            // ... SIMD computation
+            acf_output[lag-1] = horizontal_sum(sum);
+        }
+    }
+}
+
+// ============= APPROACH 2: Python Direct Calling =============
+# Call individual modules directly from Python without Vertica
+
+import ctypes
+import numpy as np
+
+# Load individual module libraries
+vr_lib = ctypes.CDLL('./libvariance_ratio.so')
+acf_lib = ctypes.CDLL('./libautocorr.so')
+garch_lib = ctypes.CDLL('./libgarch.so')
+
+# Define function signatures
+vr_lib.compute_variance_ratio.argtypes = [
+    ctypes.POINTER(ctypes.c_float),  # prices
+    ctypes.POINTER(ctypes.c_int64),  # timestamps  
+    ctypes.c_size_t,                  # n
+    ctypes.c_int                      # horizon
+]
+vr_lib.compute_variance_ratio.restype = ctypes.c_double
+
+# Direct call to CUDA module
+prices = np.array([150.1, 150.2, 150.3], dtype=np.float32)
+timestamps = np.array([1, 2, 3], dtype=np.int64)
+
+variance_ratio = vr_lib.compute_variance_ratio(
+    prices.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+    timestamps.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+    len(prices),
+    10  # horizon
+)
+
+# ============= APPROACH 3: REST API for Each Module =============
+// microservice_wrapper.cpp
+// Wrap each module as a microservice
+
+#include <crow.h>  // REST framework
+
+int main() {
+    crow::SimpleApp app;
+    
+    // Variance Ratio endpoint
+    CROW_ROUTE(app, "/variance_ratio").methods("POST"_method)
+    ([](const crow::request& req) {
+        auto json = crow::json::load(req.body);
+        std::vector<float> prices = json["prices"].get<std::vector<float>>();
+        int horizon = json["horizon"].get<int>();
+        
+        // Call CUDA function directly
+        double vr = compute_variance_ratio(prices.data(), nullptr, prices.size(), horizon);
+        
+        return crow::json::wvalue{{"variance_ratio", vr}};
+    });
+    
+    // Autocorrelation endpoint  
+    CROW_ROUTE(app, "/autocorrelation").methods("POST"_method)
+    ([](const crow::request& req) {
+        auto json = crow::json::load(req.body);
+        std::vector<double> returns = json["returns"].get<std::vector<double>>();
+        
+        std::vector<double> acf(100);
+        compute_autocorrelation(returns.data(), returns.size(), 100, acf.data());
+        
+        return crow::json::wvalue{{"acf", acf}};
+    });
+    
+    app.port(8080).multithreaded().run();
+}
+
+# ============= APPROACH 4: CLI Tools =============
+# Build each module as a standalone executable
+
+# variance_ratio_cli.cpp
+int main(int argc, char** argv) {
+    // Read from stdin or file
+    std::vector<float> prices = read_csv(argv[1]);
+    int horizon = std::stoi(argv[2]);
+    
+    double vr = compute_variance_ratio(prices.data(), nullptr, prices.size(), horizon);
+    std::cout << vr << std::endl;
+    return 0;
+}
+
+# Usage
+./variance_ratio prices.csv 10
+./autocorrelation returns.csv 100
+./garch_estimation data.csv 1,1
+
+# ============= APPROACH 5: Shared Library with Registry =============
+// module_registry.cpp - Dynamic module loader
+
+class ModuleRegistry {
+private:
+    std::map<std::string, void*> handles;
+    std::map<std::string, std::function<double(void*)>> functions;
+    
+public:
+    void loadModule(const std::string& name, const std::string& lib_path) {
+        void* handle = dlopen(lib_path.c_str(), RTLD_LAZY);
+        handles[name] = handle;
+        
+        // Get function pointer
+        typedef double (*compute_func)(const float*, size_t);
+        compute_func func = (compute_func)dlsym(handle, "compute");
+        functions[name] = func;
+    }
+    
+    double callModule(const std::string& name, const float* data, size_t n) {
+        return functions[name](data, n);
+    }
+};
+
+// Usage
+ModuleRegistry registry;
+registry.loadModule("variance_ratio", "./libvariance_ratio.so");
+registry.loadModule("autocorr", "./libautocorr.so");
+
+double vr = registry.callModule("variance_ratio", prices, n);
+
+# ============= APPROACH 6: JNI for Java Integration =============
+// For Java/Scala systems
+
+// VarianceRatioJNI.cpp
+#include <jni.h>
+
+JNIEXPORT jdouble JNICALL Java_com_microstructure_VarianceRatio_compute(
+    JNIEnv *env, jobject obj, jfloatArray prices, jint horizon) {
+    
+    jfloat* price_array = env->GetFloatArrayElements(prices, NULL);
+    jsize len = env->GetArrayLength(prices);
+    
+    double result = compute_variance_ratio(price_array, nullptr, len, horizon);
+    
+    env->ReleaseFloatArrayElements(prices, price_array, 0);
+    return result;
+}
+
+// Java usage
+public class VarianceRatio {
+    static { System.loadLibrary("variance_ratio"); }
+    public native double compute(float[] prices, int horizon);
+}
+
+# ============= Build Script (Makefile) =============
+# Build each module independently
+
+all: variance_ratio autocorr garch
+
+variance_ratio:
+    nvcc -shared -fPIC variance_ratio.cu -o libvariance_ratio.so -lcudart
+
+autocorr:
+    g++ -shared -fPIC -mavx512f autocorrelation.cpp -o libautocorr.so -fopenmp
+
+garch:
+    nvcc -shared -fPIC garch.cu -o libgarch.so -lcublas
+
+cli_tools:
+    g++ variance_ratio_cli.cpp -L. -lvariance_ratio -o variance_ratio
+    g++ autocorr_cli.cpp -L. -lautocorr -o autocorrelation
+
+python_test:
+    python3 -c "import ctypes; lib=ctypes.CDLL('./libvariance_ratio.so'); print(lib.compute_variance_ratio(...))"
+```
+
+**Best Practice Architecture:**
+
+```bash
+microstructure_modules/
+├── core/                      # Shared utilities
+│   └── common.h
+├── modules/                   # Individual modules
+│   ├── variance_ratio/
+│   │   ├── variance_ratio.cu
+│   │   ├── Makefile
+│   │   └── test.cpp
+│   ├── autocorrelation/
+│   │   ├── autocorr.cpp
+│   │   ├── Makefile
+│   │   └── test.cpp
+│   └── [53 other modules]/
+├── bindings/                  # Language bindings
+│   ├── python/
+│   ├── java/
+│   └── rest_api/
+└── orchestrator/              # Vertica UDx orchestrator
+    └── orchestrator_udx.cpp
+```
+
+This way, each module can be:
+1. Called directly from any language (Python, Java, C++)
+2. Tested independently
+3. Deployed as a microservice
+4. Used in Vertica via the orchestrator
+5. Run from command line
+6. Integrated into other systems
+
+The key is compiling each module as a **shared library** (`.so`) with a clean C API that any system can call.
