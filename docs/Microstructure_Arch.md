@@ -1,3 +1,11 @@
+# websites
+
+ Here are the arch diag:
+
+1. https://htmlpreview.github.io/?https://github.com/dronomyio/information_efficiency_metrics/blob/main/docs/index.html
+
+2. https://htmlpreview.github.io/?https://github.com/dronomyio/information_efficiency_metrics/blob/main/docs/verticaUDxTriggerToMS.html
+
 Based on the Vertica documentation, **UDx (User-Defined Extensions)** are custom functions you write in C++, Java, Python, or R that run **in-process** within Vertica's execution engine for maximum performance. Here's how to implement them for triggering microstructure computations:
 
 ## UDx Types in Vertica
