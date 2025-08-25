@@ -213,13 +213,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Vertica UDx Trigger → Microstructure Code Execution Flow</h1>
+        <h1> Vertica UDx Trigger → Microstructure Code Execution Flow</h1>
         
         <div class="flow-diagram">
             <!-- Step 1: Data Arrival -->
             <div class="process-box">
                 <span class="latency-badge">T + 0ns</span>
-                <div class="process-title">📊 Step 1: Market Data Arrives</div>
+                <div class="process-title"> Step 1: Market Data Arrives</div>
                 <div class="code-block">
                     <span class="comment">// WebSocket data from Polygon.io</span><br>
                     {<br>
@@ -236,7 +236,7 @@
             <!-- Step 2: Vertica Insert -->
             <div class="process-box">
                 <span class="latency-badge">T + 30ns</span>
-                <div class="process-title">💾 Step 2: Insert into Vertica Table</div>
+                <div class="process-title"> Step 2: Insert into Vertica Table</div>
                 <div class="code-block">
                     <span class="sql">INSERT INTO</span> trades (symbol, price, volume, timestamp)<br>
                     <span class="sql">VALUES</span> (<span class="string">'AAPL'</span>, <span class="number">150.25</span>, <span class="number">1000</span>, <span class="number">1673827200123456789</span>);
@@ -248,7 +248,7 @@
             <!-- Step 3: Trigger Fires -->
             <div class="process-box">
                 <span class="latency-badge">T + 50ns</span>
-                <div class="process-title">⚡ Step 3: UDx Trigger Fires (In-Process)</div>
+                <div class="process-title"> Step 3: UDx Trigger Fires (In-Process)</div>
                 <div class="code-block">
                     <span class="sql">CREATE TRIGGER</span> on_trade_insert<br>
                     <span class="sql">AFTER INSERT ON</span> trades<br>
@@ -265,7 +265,7 @@
             <!-- Step 4: Memory Handoff -->
             <div class="process-box">
                 <span class="latency-badge">T + 70ns</span>
-                <div class="process-title">🔄 Step 4: Direct Memory Access (Zero Copy)</div>
+                <div class="process-title"> Step 4: Direct Memory Access (Zero Copy)</div>
                 <div class="memory-diagram">
                     <div class="memory-block active">
                         <strong>Vertica Process</strong><br>
@@ -305,7 +305,7 @@
             <!-- Step 5: Microstructure Execution -->
             <div class="process-box">
                 <span class="latency-badge">T + 100ns</span>
-                <div class="process-title">🎯 Step 5: Microstructure Code Execution</div>
+                <div class="process-title"> Step 5: Microstructure Code Execution</div>
                 <div class="code-block">
                     <span class="cpp">// Your CUDA/SIMD microstructure code</span><br>
                     <span class="keyword">void</span> <span class="function">triggerMicrostructureCompute</span>(<span class="keyword">const float*</span> prices,<br>
@@ -332,7 +332,7 @@
             <!-- Step 6: Result Available -->
             <div class="process-box">
                 <span class="latency-badge">T + 150ns</span>
-                <div class="process-title">✅ Step 6: Results Written Back</div>
+                <div class="process-title"> Step 6: Results Written Back</div>
                 <div class="code-block">
                     <span class="sql">-- Results immediately available in Vertica</span><br>
                     <span class="sql">SELECT</span> symbol, price, variance_ratio, autocorrelation<br>
@@ -371,7 +371,7 @@
             
             <!-- Key Points -->
             <div class="process-box" style="background: rgba(255, 255, 0, 0.1); border-color: #ffff00;">
-                <div class="process-title">🔑 Why It's So Fast (100ns)</div>
+                <div class="process-title"> Why It's So Fast (100ns)</div>
                 <ul style="line-height: 1.8; padding-left: 20px;">
                     <li><span class="highlight">Same Process Space</span>: UDx runs inside Vertica's process - no IPC overhead</li>
                     <li><span class="highlight">Zero Copy</span>: Direct pointer access to columnar data - no serialization</li>
@@ -384,10 +384,10 @@
             
             <!-- Comparison -->
             <div class="process-box" style="background: rgba(255, 0, 0, 0.1); border-color: #ff6666;">
-                <div class="process-title">⚖️ Comparison with External Calls</div>
+                <div class="process-title"> Comparison with External Calls</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
                     <div>
-                        <strong style="color: #00ff00;">✅ UDx In-Process (100ns)</strong>
+                        <strong style="color: #00ff00;"> UDx In-Process (100ns)</strong>
                         <ul style="margin-top: 10px; font-size: 0.9em;">
                             <li>Direct function call</li>
                             <li>Same memory space</li>
@@ -396,7 +396,7 @@
                         </ul>
                     </div>
                     <div>
-                        <strong style="color: #ff6666;">❌ External Process (10ms+)</strong>
+                        <strong style="color: #ff6666;"> External Process (10ms+)</strong>
                         <ul style="margin-top: 10px; font-size: 0.9em;">
                             <li>IPC/Socket communication</li>
                             <li>Data serialization</li>
@@ -408,9 +408,9 @@
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-                <button onclick="animateFlow()">🎬 Animate Data Flow</button>
-                <button onclick="showMemoryLayout()">💾 Show Memory Layout</button>
-                <button onclick="compareLatencies()">⏱️ Compare Latencies</button>
+                <button onclick="animateFlow()"> Animate Data Flow</button>
+                <button onclick="showMemoryLayout()"> Show Memory Layout</button>
+                <button onclick="compareLatencies()">Compare Latencies</button>
             </div>
         </div>
     </div>
@@ -457,19 +457,19 @@ No page faults, no TLB misses.`);
         function compareLatencies() {
             alert(`Latency Comparison:
             
-🚀 UDx In-Process: 100-150ns
+ UDx In-Process: 100-150ns
    • Function pointer jump: 10ns
    • Memory access: 20ns
    • Computation: 70-120ns
    
-🐌 External Process: 10,000ns+
+ External Process: 10,000ns+
    • Process spawn: 1000ns
    • IPC setup: 500ns
    • Serialization: 2000ns
    • Network/Socket: 5000ns
    • Deserialization: 1500ns
    
-⚡ Speed Gain: 100x faster!`);
+ Speed Gain: 100x faster!`);
         }
         
         // Auto-animate on load

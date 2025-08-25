@@ -257,7 +257,7 @@
         
         <!-- Data Ingestion Layer -->
         <div class="architecture-layer">
-            <div class="layer-title">📡 Data Ingestion Layer</div>
+            <div class="layer-title"> Data Ingestion Layer</div>
             <div class="components-grid">
                 <div class="component">Exchange 1<br><small>Nanosecond</small></div>
                 <div class="component">Exchange 2<br><small>Nanosecond</small></div>
@@ -271,7 +271,7 @@
         
         <!-- Vertica Database -->
         <div class="architecture-layer">
-            <div class="layer-title">🗄️ Vertica Database (AWS EC2 Instance)</div>
+            <div class="layer-title"> Vertica Database (AWS EC2 Instance)</div>
             <div class="components-grid">
                 <div class="component">TRADES<br><small>Nanosec TS</small></div>
                 <div class="component">QUOTES<br><small>Nanosec TS</small></div>
@@ -301,7 +301,7 @@
         
         <!-- Shared Memory -->
         <div class="architecture-layer" style="background: rgba(128, 0, 255, 0.1); border-color: rgba(128, 0, 255, 0.4);">
-            <div class="layer-title">💾 Shared Memory Buffer (64GB Huge Pages)</div>
+            <div class="layer-title"> Shared Memory Buffer (64GB Huge Pages)</div>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">Zero</div>
@@ -322,11 +322,11 @@
         
         <!-- Microstructure Modules -->
         <div class="architecture-layer">
-            <div class="layer-title">🔬 55 Microstructure Modules</div>
+            <div class="layer-title"> 55 Microstructure Modules</div>
             
             <div class="microstructure-modules">
                 <div class="module-group">
-                    <div class="module-group-title">🚀 Price Discovery (GPU)</div>
+                    <div class="module-group-title"> Price Discovery (GPU)</div>
                     <div class="module-list">
                         <div class="module-item gpu-component">Variance Ratio</div>
                         <div class="module-item gpu-component">Hasbrouck Info</div>
@@ -340,7 +340,7 @@
                 </div>
                 
                 <div class="module-group">
-                    <div class="module-group-title">💧 Liquidity Metrics (SIMD)</div>
+                    <div class="module-group-title"> Liquidity Metrics (SIMD)</div>
                     <div class="module-list">
                         <div class="module-item simd-component">Bid-Ask Spread</div>
                         <div class="module-item simd-component">Effective Spread</div>
@@ -354,7 +354,7 @@
                 </div>
                 
                 <div class="module-group">
-                    <div class="module-group-title">📊 Volatility (GPU)</div>
+                    <div class="module-group-title"> Volatility (GPU)</div>
                     <div class="module-list">
                         <div class="module-item gpu-component">Realized Vol</div>
                         <div class="module-item gpu-component">GARCH</div>
@@ -368,7 +368,7 @@
                 </div>
                 
                 <div class="module-group">
-                    <div class="module-group-title">⚖️ Market Quality (SIMD)</div>
+                    <div class="module-group-title"> Market Quality (SIMD)</div>
                     <div class="module-list">
                         <div class="module-item simd-component">Autocorrelation</div>
                         <div class="module-item simd-component">Trade Class</div>
@@ -382,7 +382,7 @@
                 </div>
                 
                 <div class="module-group">
-                    <div class="module-group-title">🔗 Cross-Market (GPU)</div>
+                    <div class="module-group-title"> Cross-Market (GPU)</div>
                     <div class="module-list">
                         <div class="module-item gpu-component">Cointegration</div>
                         <div class="module-item gpu-component">Lead-Lag Ratio</div>
@@ -396,7 +396,7 @@
                 </div>
                 
                 <div class="module-group">
-                    <div class="module-group-title">🔍 Regulatory (CPU)</div>
+                    <div class="module-group-title"> Regulatory (CPU)</div>
                     <div class="module-list">
                         <div class="module-item">NBBO Compliance</div>
                         <div class="module-item">Reg NMS</div>
@@ -414,7 +414,7 @@
         
         <!-- Hardware Resources -->
         <div class="architecture-layer">
-            <div class="layer-title">⚙️ Execution Environment</div>
+            <div class="layer-title">Execution Environment</div>
             <div class="components-grid">
                 <div class="component gpu-component">8x NVIDIA A100<br><small>Multi-GPU</small></div>
                 <div class="component simd-component">64 CPU Cores<br><small>AMD EPYC</small></div>
@@ -426,7 +426,7 @@
         
         <!-- Results & Consumers -->
         <div class="architecture-layer">
-            <div class="layer-title">📈 Downstream Consumers</div>
+            <div class="layer-title"> Downstream Consumers</div>
             <div class="components-grid">
                 <div class="component">Trading Engine<br><small>&lt;100μs latency</small></div>
                 <div class="component">Risk Analytics<br><small>Real-time</small></div>

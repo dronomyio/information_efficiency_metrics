@@ -6,6 +6,7 @@ build/
 *.dylib
 build-release/
 build-debug/
+*.back
 
 # Generated data
 data/*.bin
