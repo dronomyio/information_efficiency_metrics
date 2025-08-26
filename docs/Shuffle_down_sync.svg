@@ -1,0 +1,252 @@
+<svg width="1200" height="700" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#ffffff" stroke="#ccc" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#2c3e50">
+    __shfl_down_sync(mask, val, offset) - Warp Shuffle Instruction
+  </text>
+  
+  <!-- Main explanation -->
+  <rect x="50" y="50" width="1100" height="80" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2"/>
+  <text x="600" y="75" text-anchor="middle" font-family="Arial" font-size="16" fill="#2c3e50">
+    Each thread receives the value from the thread "offset" positions ahead in the warp
+  </text>
+  <text x="600" y="95" text-anchor="middle" font-family="Arial" font-size="14" fill="#7f8c8d">
+    thread[i] gets value from thread[i + offset] (if i + offset &lt; 32, else gets own value)
+  </text>
+  <text x="600" y="115" text-anchor="middle" font-family="Arial" font-size="14" fill="#e74c3c" font-weight="bold">
+    mask = 0xffffffff means all 32 threads participate
+  </text>
+  
+  <!-- Before shuffle -->
+  <text x="100" y="160" font-family="Arial" font-size="16" font-weight="bold" fill="#2c3e50">
+    BEFORE: __shfl_down_sync(0xffffffff, val, 16)
+  </text>
+  
+  <!-- Thread layout before -->
+  <g id="threads-before">
+    <!-- Row 1: Threads 0-15 -->
+    <text x="100" y="185" font-family="Arial" font-size="12" fill="#666">Threads 0-15:</text>
+    
+    <rect x="100" y="195" width="35" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="117" y="210" text-anchor="middle" font-size="10" fill="white">T0</text>
+    <text x="117" y="220" text-anchor="middle" font-size="8" fill="white">val=A</text>
+    
+    <rect x="140" y="195" width="35" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="157" y="210" text-anchor="middle" font-size="10" fill="white">T1</text>
+    <text x="157" y="220" text-anchor="middle" font-size="8" fill="white">val=B</text>
+    
+    <rect x="180" y="195" width="35" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="197" y="210" text-anchor="middle" font-size="10" fill="white">T2</text>
+    <text x="197" y="220" text-anchor="middle" font-size="8" fill="white">val=C</text>
+    
+    <rect x="220" y="195" width="35" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="237" y="210" text-anchor="middle" font-size="10" fill="white">T3</text>
+    <text x="237" y="220" text-anchor="middle" font-size="8" fill="white">val=D</text>
+    
+    <text x="270" y="210" text-anchor="middle" font-size="12" fill="#666">...</text>
+    
+    <rect x="300" y="195" width="35" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="317" y="210" text-anchor="middle" font-size="9" fill="white">T15</text>
+    <text x="317" y="220" text-anchor="middle" font-size="8" fill="white">val=P</text>
+    
+    <!-- Row 2: Threads 16-31 -->
+    <text x="100" y="245" font-family="Arial" font-size="12" fill="#666">Threads 16-31:</text>
+    
+    <rect x="100" y="255" width="35" height="25" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="117" y="270" text-anchor="middle" font-size="9" fill="white">T16</text>
+    <text x="117" y="280" text-anchor="middle" font-size="8" fill="white">val=Q</text>
+    
+    <rect x="140" y="255" width="35" height="25" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="157" y="270" text-anchor="middle" font-size="9" fill="white">T17</text>
+    <text x="157" y="280" text-anchor="middle" font-size="8" fill="white">val=R</text>
+    
+    <rect x="180" y="255" width="35" height="25" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="197" y="270" text-anchor="middle" font-size="9" fill="white">T18</text>
+    <text x="197" y="280" text-anchor="middle" font-size="8" fill="white">val=S</text>
+    
+    <rect x="220" y="255" width="35" height="25" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="237" y="270" text-anchor="middle" font-size="9" fill="white">T19</text>
+    <text x="237" y="280" text-anchor="middle" font-size="8" fill="white">val=T</text>
+    
+    <text x="270" y="270" text-anchor="middle" font-size="12" fill="#666">...</text>
+    
+    <rect x="300" y="255" width="35" height="25" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="317" y="270" text-anchor="middle" font-size="9" fill="white">T31</text>
+    <text x="317" y="280" text-anchor="middle" font-size="8" fill="white">val=Z</text>
+  </g>
+  
+  <!-- Arrows showing data movement -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#e74c3c"/>
+    </marker>
+  </defs>
+  
+  <!-- Data flow arrows -->
+  <path d="M 117 255 Q 117 235 117 225" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 157 255 Q 157 235 157 225" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 197 255 Q 197 235 197 225" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 237 255 Q 237 235 237 225" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 317 255 Q 317 235 317 225" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Labels for arrows -->
+  <text x="130" y="240" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Q→T0</text>
+  <text x="170" y="240" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">R→T1</text>
+  <text x="210" y="240" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">S→T2</text>
+  <text x="250" y="240" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">T→T3</text>
+  <text x="330" y="240" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Z→T15</text>
+  
+  <!-- After shuffle -->
+  <text x="450" y="160" font-family="Arial" font-size="16" font-weight="bold" fill="#2c3e50">
+    AFTER: Each thread gets value from thread+16
+  </text>
+  
+  <!-- Thread layout after -->
+  <g id="threads-after">
+    <!-- Row 1: Threads 0-15 (now have values from 16-31) -->
+    <text x="450" y="185" font-family="Arial" font-size="12" fill="#666">Threads 0-15 (active):</text>
+    
+    <rect x="450" y="195" width="35" height="25" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="467" y="210" text-anchor="middle" font-size="10" fill="white">T0</text>
+    <text x="467" y="220" text-anchor="middle" font-size="8" fill="white">val=Q</text>
+    
+    <rect x="490" y="195" width="35" height="25" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="507" y="210" text-anchor="middle" font-size="10" fill="white">T1</text>
+    <text x="507" y="220" text-anchor="middle" font-size="8" fill="white">val=R</text>
+    
+    <rect x="530" y="195" width="35" height="25" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="547" y="210" text-anchor="middle" font-size="10" fill="white">T2</text>
+    <text x="547" y="220" text-anchor="middle" font-size="8" fill="white">val=S</text>
+    
+    <rect x="570" y="195" width="35" height="25" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="587" y="210" text-anchor="middle" font-size="10" fill="white">T3</text>
+    <text x="587" y="220" text-anchor="middle" font-size="8" fill="white">val=T</text>
+    
+    <text x="620" y="210" text-anchor="middle" font-size="12" fill="#666">...</text>
+    
+    <rect x="650" y="195" width="35" height="25" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="667" y="210" text-anchor="middle" font-size="9" fill="white">T15</text>
+    <text x="667" y="220" text-anchor="middle" font-size="8" fill="white">val=Z</text>
+    
+    <!-- Row 2: Threads 16-31 (keep their own values) -->
+    <text x="450" y="245" font-family="Arial" font-size="12" fill="#666">Threads 16-31 (inactive):</text>
+    
+    <rect x="450" y="255" width="35" height="25" fill="#bdc3c7" stroke="#2c3e50"/>
+    <text x="467" y="270" text-anchor="middle" font-size="9" fill="black">T16</text>
+    <text x="467" y="280" text-anchor="middle" font-size="8" fill="black">val=Q</text>
+    
+    <rect x="490" y="255" width="35" height="25" fill="#bdc3c7" stroke="#2c3e50"/>
+    <text x="507" y="270" text-anchor="middle" font-size="9" fill="black">T17</text>
+    <text x="507" y="280" text-anchor="middle" font-size="8" fill="black">val=R</text>
+    
+    <rect x="530" y="255" width="35" height="25" fill="#bdc3c7" stroke="#2c3e50"/>
+    <text x="547" y="270" text-anchor="middle" font-size="9" fill="black">T18</text>
+    <text x="547" y="280" text-anchor="middle" font-size="8" fill="black">val=S</text>
+    
+    <text x="580" y="270" text-anchor="middle" font-size="12" fill="#666">... (unused)</text>
+    
+    <rect x="650" y="255" width="35" height="25" fill="#bdc3c7" stroke="#2c3e50"/>
+    <text x="667" y="270" text-anchor="middle" font-size="9" fill="black">T31</text>
+    <text x="667" y="280" text-anchor="middle" font-size="8" fill="black">val=Z</text>
+  </g>
+  
+  <!-- Detailed example -->
+  <rect x="750" y="150" width="400" height="180" fill="#f8f9fa" stroke="#3498db" stroke-width="2"/>
+  <text x="950" y="175" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#2980b9">
+    Concrete Example
+  </text>
+  
+  <text x="770" y="200" font-family="monospace" font-size="12" fill="#2c3e50">
+    Before shuffle (offset=16):
+  </text>
+  <text x="770" y="220" font-family="monospace" font-size="11" fill="#e74c3c">
+    T0: val = 10    T16: val = 50
+  </text>
+  <text x="770" y="235" font-family="monospace" font-size="11" fill="#e74c3c">
+    T1: val = 20    T17: val = 60
+  </text>
+  <text x="770" y="250" font-family="monospace" font-size="11" fill="#e74c3c">
+    T2: val = 30    T18: val = 70
+  </text>
+  
+  <text x="770" y="275" font-family="monospace" font-size="12" fill="#2c3e50">
+    After __shfl_down_sync():
+  </text>
+  <text x="770" y="295" font-family="monospace" font-size="11" fill="#27ae60">
+    T0: val = 50    (got from T16)
+  </text>
+  <text x="770" y="310" font-family="monospace" font-size="11" fill="#27ae60">
+    T1: val = 60    (got from T17)
+  </text>
+  <text x="770" y="325" font-family="monospace" font-size="11" fill="#27ae60">
+    T2: val = 70    (got from T18)
+  </text>
+  
+  <!-- Mask explanation -->
+  <rect x="50" y="320" width="1100" height="160" fill="#fff5f5" stroke="#e74c3c" stroke-width="2"/>
+  <text x="600" y="345" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#c0392b">
+    Role of Mask Parameter (0xffffffff)
+  </text>
+  
+  <text x="100" y="375" font-family="Arial" font-size="14" fill="#2c3e50">
+    The mask determines which threads participate in the shuffle:
+  </text>
+  
+  <!-- Binary representation -->
+  <rect x="120" y="385" width="600" height="30" fill="#2c3e50"/>
+  <text x="420" y="405" text-anchor="middle" font-family="monospace" font-size="12" fill="#ecf0f1">
+    0xffffffff = 11111111111111111111111111111111 (binary)
+  </text>
+  
+  <text x="100" y="430" font-family="Arial" font-size="13" fill="#7f8c8d">
+    • Each bit corresponds to a thread in the warp (bit 0 = thread 0, bit 1 = thread 1, etc.)
+  </text>
+  <text x="100" y="450" font-family="Arial" font-size="13" fill="#7f8c8d">
+    • Bit = 1 means that thread participates in the shuffle
+  </text>
+  <text x="100" y="470" font-family="Arial" font-size="13" fill="#7f8c8d">
+    • 0xffffffff = all 32 bits set to 1 → all threads participate
+  </text>
+  
+  <!-- Alternative mask example -->
+  <rect x="750" y="385" width="350" height="80" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+  <text x="925" y="405" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#2c3e50">
+    Example: mask = 0x0000ffff
+  </text>
+  <text x="925" y="425" text-anchor="middle" font-family="monospace" font-size="10" fill="#e74c3c">
+    00000000000000001111111111111111
+  </text>
+  <text x="925" y="445" text-anchor="middle" font-family="Arial" font-size="11" fill="#7f8c8d">
+    Only threads 0-15 participate
+  </text>
+  <text x="925" y="460" text-anchor="middle" font-family="Arial" font-size="11" fill="#7f8c8d">
+    Threads 16-31 are excluded
+  </text>
+  
+  <!-- Key insights -->
+  <rect x="50" y="500" width="1100" height="120" fill="#eaf6f6" stroke="#16a085" stroke-width="2"/>
+  <text x="600" y="525" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#0e6655">
+    Key Insights
+  </text>
+  
+  <text x="100" y="550" font-family="Arial" font-size="13" fill="#0e6655">
+    1. Data moves FROM higher-numbered threads TO lower-numbered threads
+  </text>
+  <text x="100" y="570" font-family="Arial" font-size="13" fill="#0e6655">
+    2. Threads beyond the offset range (16-31) keep their original values but become inactive
+  </text>
+  <text x="100" y="590" font-family="Arial" font-size="13" fill="#0e6655">
+    3. This creates the "cascading reduction" effect - each step halves the active threads
+  </text>
+  <text x="100" y="610" font-family="Arial" font-size="13" fill="#0e6655">
+    4. Hardware executes this instruction in a single cycle across all 32 threads simultaneously
+  </text>
+  
+  <!-- Performance note -->
+  <rect x="50" y="640" width="1100" height="40" fill="#2c3e50"/>
+  <text x="600" y="665" text-anchor="middle" font-family="Arial" font-size="14" fill="#ecf0f1" font-weight="bold">
+    Extremely fast: No memory access, no synchronization needed - pure register-to-register data movement
+  </text>
+</svg>
