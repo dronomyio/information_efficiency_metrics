@@ -1,8 +1,17 @@
 This CUDA implementation efficiently computes variance ratios for market microstructure analysis using multi-GPU parallelization. Let me break down how it maps to the mathematical framework you provided.
 
+
 ## Mathematical Implementation
 
 **Variance Ratio Formula**: VR(h) = Var(r_t^(h)) / (h · Var(r_t^(1)))
+
+**h** is the time horizon (number of periods), and **r_t^(1)** is the single-period return (same as r_t), while **r_t^(h)** is the h-period cumulative return.In this visualization:
+
+**h** = 3 (the time horizon - we're looking at 3-period returns)
+**r_t^(1)** = single-period return (the basic return from one time period to the next)
+**r_t^(h)** = h-period return (sum of h consecutive single-period returns)
+
+The diagram shows how h-period returns are constructed by summing consecutive single-period returns, and how the variance ratio compares the variability of these longer-horizon returns to what you'd expect under a random walk (where VR should equal 1).
 
 The code implements this through several key kernels:
 
