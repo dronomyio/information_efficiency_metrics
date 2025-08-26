@@ -1,0 +1,400 @@
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="gpu-pattern" patternUnits="userSpaceOnUse" width="10" height="10">
+      <rect width="10" height="10" fill="#2E8B57"/>
+      <circle cx="5" cy="5" r="2" fill="#90EE90"/>
+    </pattern>
+    <linearGradient id="memory-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4169E1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#87CEEB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="compute-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    Multi-GPU Variance Ratio CUDA Architecture
+  </text>
+  
+  <!-- Host CPU Section -->
+  <rect x="50" y="60" width="300" height="120" fill="#e8f4f8" stroke="#2c3e50" stroke-width="2" rx="10"/>
+  <text x="200" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+    Host CPU (OpenMP)
+  </text>
+  
+  <!-- Input Data -->
+  <rect x="70" y="100" width="120" height="30" fill="#3498db" stroke="#2c3e50" rx="5"/>
+  <text x="130" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Returns Data
+  </text>
+  
+  <!-- Horizon Distribution -->
+  <rect x="210" y="100" width="120" height="30" fill="#9b59b6" stroke="#2c3e50" rx="5"/>
+  <text x="270" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Horizon Split
+  </text>
+  
+  <!-- Work Distribution Logic -->
+  <rect x="70" y="140" width="260" height="25" fill="#f39c12" stroke="#2c3e50" rx="5"/>
+  <text x="200" y="157" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    chunk_size = (n_horizons + n_gpus - 1) / n_gpus
+  </text>
+  
+  <!-- GPU Section -->
+  <g id="gpu-cluster">
+    <!-- GPU 0 -->
+    <rect x="400" y="60" width="180" height="160" fill="url(#gpu-pattern)" stroke="#2c3e50" stroke-width="2" rx="10"/>
+    <text x="490" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      GPU 0
+    </text>
+    <text x="490" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      RTX 3070 (8.6 SM)
+    </text>
+    <text x="490" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Horizons: h[0:chunk_size]
+    </text>
+    
+    <!-- Stream -->
+    <rect x="415" y="135" width="150" height="15" fill="#1abc9c" rx="3"/>
+    <text x="490" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+      CUDA Stream 0
+    </text>
+    
+    <!-- Memory -->
+    <rect x="415" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="450" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_returns
+    </text>
+    
+    <rect x="495" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="530" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_h_returns
+    </text>
+    
+    <!-- Workspace -->
+    <rect x="415" y="180" width="150" height="15" fill="#34495e" rx="3"/>
+    <text x="490" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      10M double workspace
+    </text>
+    
+    <!-- GPU 1 -->
+    <rect x="600" y="60" width="180" height="160" fill="url(#gpu-pattern)" stroke="#2c3e50" stroke-width="2" rx="10"/>
+    <text x="690" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      GPU 1
+    </text>
+    <text x="690" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      RTX 3070 (8.6 SM)
+    </text>
+    <text x="690" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Horizons: h[chunk_size:2*chunk_size]
+    </text>
+    
+    <rect x="615" y="135" width="150" height="15" fill="#1abc9c" rx="3"/>
+    <text x="690" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+      CUDA Stream 1
+    </text>
+    
+    <rect x="615" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="650" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_returns
+    </text>
+    
+    <rect x="695" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="730" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_h_returns
+    </text>
+    
+    <rect x="615" y="180" width="150" height="15" fill="#34495e" rx="3"/>
+    <text x="690" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      10M double workspace
+    </text>
+    
+    <!-- GPU 2 -->
+    <rect x="800" y="60" width="180" height="160" fill="url(#gpu-pattern)" stroke="#2c3e50" stroke-width="2" rx="10"/>
+    <text x="890" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      GPU 2
+    </text>
+    <text x="890" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      RTX 3070 (8.6 SM)
+    </text>
+    <text x="890" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Horizons: h[2*chunk_size:3*chunk_size]
+    </text>
+    
+    <rect x="815" y="135" width="150" height="15" fill="#1abc9c" rx="3"/>
+    <text x="890" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+      CUDA Stream 2
+    </text>
+    
+    <rect x="815" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="850" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_returns
+    </text>
+    
+    <rect x="895" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="930" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_h_returns
+    </text>
+    
+    <rect x="815" y="180" width="150" height="15" fill="#34495e" rx="3"/>
+    <text x="890" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      10M double workspace
+    </text>
+    
+    <!-- GPU 3 -->
+    <rect x="1000" y="60" width="180" height="160" fill="url(#gpu-pattern)" stroke="#2c3e50" stroke-width="2" rx="10"/>
+    <text x="1090" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      GPU 3
+    </text>
+    <text x="1090" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      RTX 3070 (8.6 SM)
+    </text>
+    <text x="1090" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Horizons: h[3*chunk_size:end]
+    </text>
+    
+    <rect x="1015" y="135" width="150" height="15" fill="#1abc9c" rx="3"/>
+    <text x="1090" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+      CUDA Stream 3
+    </text>
+    
+    <rect x="1015" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="1050" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_returns
+    </text>
+    
+    <rect x="1095" y="155" width="70" height="20" fill="url(#memory-gradient)" rx="3"/>
+    <text x="1130" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      d_h_returns
+    </text>
+    
+    <rect x="1015" y="180" width="150" height="15" fill="#34495e" rx="3"/>
+    <text x="1090" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+      10M double workspace
+    </text>
+  </g>
+  
+  <!-- Data Flow Arrows -->
+  <path d="M 350 120 L 395 120" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 350 140 L 595 140" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 350 160 L 795 160" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 350 180 L 995 180" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c"/>
+    </marker>
+  </defs>
+  
+  <!-- Kernel Execution Pipeline -->
+  <rect x="50" y="250" width="1100" height="220" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="10"/>
+  <text x="600" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">
+    Per-GPU Kernel Execution Pipeline (For Each Horizon h)
+  </text>
+  
+  <!-- Step 1: H-Period Returns -->
+  <rect x="80" y="290" width="200" height="80" fill="url(#compute-gradient)" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="180" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    1. computeHPeriodReturns
+  </text>
+  <text x="180" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    r_t^(h) = Σ(r_t+j) j=0 to h-1
+  </text>
+  <text x="180" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Grid: (h_size+255)/256 blocks
+  </text>
+  <text x="180" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Block: 256 threads
+  </text>
+  
+  <!-- Step 2: Mean Computation -->
+  <rect x="300" y="290" width="200" height="80" fill="url(#compute-gradient)" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="400" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    2. computeMeanKernel
+  </text>
+  <text x="400" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    μ = E[r_t], μ_h = E[r_t^(h)]
+  </text>
+  <text x="400" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Warp-level reduction
+  </text>
+  <text x="400" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    + Atomic accumulation
+  </text>
+  
+  <!-- Step 3: Variance Computation -->
+  <rect x="520" y="290" width="200" height="80" fill="url(#compute-gradient)" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="620" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    3. computeVarianceWelford
+  </text>
+  <text x="620" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Var = E[(r_t - μ)²] / (n-1)
+  </text>
+  <text x="620" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Numerically stable
+  </text>
+  <text x="620" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Shared memory reduction
+  </text>
+  
+  <!-- Step 4: VR Calculation -->
+  <rect x="740" y="290" width="200" height="80" fill="#27ae60" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="840" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    4. VR Calculation
+  </text>
+  <text x="840" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    VR(h) = Var(r_t^(h)) / (h·Var(r_t))
+  </text>
+  <text x="840" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Host computation
+  </text>
+  <text x="840" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Result aggregation
+  </text>
+  
+  <!-- Step 5: Memory Cleanup -->
+  <rect x="960" y="290" width="170" height="80" fill="#34495e" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="1045" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    5. Cleanup
+  </text>
+  <text x="1045" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    cudaFree()
+  </text>
+  <text x="1045" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Stream sync
+  </text>
+  <text x="1045" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Memory deallocation
+  </text>
+  
+  <!-- Pipeline arrows -->
+  <path d="M 280 330 L 295 330" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead-black)"/>
+  <path d="M 500 330 L 515 330" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead-black)"/>
+  <path d="M 720 330 L 735 330" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead-black)"/>
+  <path d="M 940 330 L 955 330" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead-black)"/>
+  
+  <defs>
+    <marker id="arrowhead-black" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Synchronization and Results -->
+  <rect x="80" y="390" width="860" height="60" fill="#8e44ad" stroke="#2c3e50" stroke-width="1" rx="8"/>
+  <text x="510" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Asynchronous Execution with Stream Synchronization
+  </text>
+  <text x="510" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    cudaStreamSynchronize() ensures data dependencies | Results collected via OpenMP parallel reduction
+  </text>
+  
+  <!-- Memory Optimization Details -->
+  <rect x="50" y="490" width="1100" height="120" fill="#f7f9fc" stroke="#2c3e50" stroke-width="2" rx="10"/>
+  <text x="600" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">
+    Optimization Features
+  </text>
+  
+  <!-- Warp Reduction -->
+  <rect x="80" y="530" width="200" height="60" fill="#3498db" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="180" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Warp-Level Reduction
+  </text>
+  <text x="180" y="567" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    __shfl_down_sync() for</text>
+  <text x="180" y="579" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    efficient parallel sums</text>
+  
+  <!-- Shared Memory -->
+  <rect x="300" y="530" width="200" height="60" fill="#e67e22" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="400" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Shared Memory</text>
+  <text x="400" y="567" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    48KB per block for</text>
+  <text x="400" y="579" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    fast data exchange</text>
+  
+  <!-- Atomic Operations -->
+  <rect x="520" y="530" width="200" height="60" fill="#e74c3c" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="620" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Atomic Operations</text>
+  <text x="620" y="567" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Double-precision atomicAdd</text>
+  <text x="620" y="579" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    for safe accumulation</text>
+  
+  <!-- Grid-Stride Loops -->
+  <rect x="740" y="530" width="200" height="60" fill="#9b59b6" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="840" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Grid-Stride Loops</text>
+  <text x="840" y="567" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Handle datasets larger</text>
+  <text x="840" y="579" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    than GPU grid size</text>
+  
+  <!-- Memory Coalescing -->
+  <rect x="960" y="530" width="170" height="60" fill="#1abc9c" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="1045" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Coalesced Access</text>
+  <text x="1045" y="567" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Contiguous memory</text>
+  <text x="1045" y="579" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    for max bandwidth</text>
+  
+  <!-- Performance Stats Box -->
+  <rect x="50" y="630" width="300" height="120" fill="#2c3e50" stroke="#34495e" stroke-width="2" rx="10"/>
+  <text x="200" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Performance Achieved
+  </text>
+  <text x="200" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">
+    VR Throughput: 173K-280K pts/ms
+  </text>
+  <text x="200" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">
+    Memory Bandwidth: ~800 GB/s
+  </text>
+  <text x="200" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">
+    Total GPU Memory: 31.2 GB
+  </text>
+  <text x="200" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">
+    Parallel Efficiency: 95%+
+  </text>
+  
+  <!-- Mathematical Formula Box -->
+  <rect x="370" y="630" width="460" height="120" fill="#f8f9fa" stroke="#2c3e50" stroke-width="2" rx="10"/>
+  <text x="600" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+    Mathematical Implementation
+  </text>
+  <text x="600" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+    VR(h) = Var(r_t^(h)) / (h × Var(r_t^(1)))
+  </text>
+  <text x="600" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+    where r_t^(h) = Σ(j=0 to h-1) r_(t+j)
+  </text>
+  <text x="600" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#7f8c8d">
+    Welford's Algorithm: Var = Σ(x_i - μ)² / (n-1)
+  </text>
+  
+  <!-- Limitations Box -->
+  <rect x="850" y="630" width="300" height="120" fill="#e8f4f8" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="1000" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+    Implementation Issues
+  </text>
+  <text x="1000" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#e74c3c">
+    ⚠ No heteroskedasticity correction
+  </text>
+  <text x="1000" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#e74c3c">
+    ⚠ Overlapping returns bias
+  </text>
+  <text x="1000" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#e74c3c">
+    ⚠ Degrees of freedom issues
+  </text>
+  <text x="1000" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#27ae60">
+    ✓ Numerically stable
+  </text>
+</svg>
