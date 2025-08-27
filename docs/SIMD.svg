@@ -1,228 +1,166 @@
-<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1400" height="1000" fill="white" stroke="black" stroke-width="1"/>
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="white" stroke="gray" stroke-width="1"/>
   
-  <text x="700" y="25" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold">
-    Full Demo: Parallel CUDA (GPU) + SIMD (CPU) Processing Flow
+  <text x="600" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">
+    Full Demo: Parallel CUDA GPU + SIMD CPU Processing
   </text>
   
-  <!-- Input data -->
-  <rect x="50" y="50" width="1300" height="60" fill="#f0f0f0" stroke="black" stroke-width="2"/>
-  <text x="700" y="75" text-anchor="middle" font-size="14" font-weight="bold">
-    Input: 4 Market Types × 100K Returns Each
+  <!-- Input section -->
+  <rect x="50" y="50" width="1100" height="50" fill="#f5f5f5" stroke="black"/>
+  <text x="600" y="70" text-anchor="middle" font-size="12" font-weight="bold">
+    Input: 4 Market Types x 100K Returns Each
   </text>
-  <text x="700" y="95" text-anchor="middle" font-size="12">
+  <text x="600" y="85" text-anchor="middle" font-size="10">
     Efficient Market, Mean Reverting (φ=-0.6), Trending (φ=0.6), Volatility Clustering
   </text>
   
-  <!-- Parallel processing split -->
-  <rect x="50" y="130" width="650" height="800" fill="#e6f3ff" stroke="blue" stroke-width="3"/>
-  <text x="375" y="155" text-anchor="middle" font-size="16" font-weight="bold">
+  <!-- Split into two processing paths -->
+  <rect x="50" y="120" width="550" height="600" fill="#e6f3ff" stroke="blue" stroke-width="2"/>
+  <text x="325" y="140" text-anchor="middle" font-size="14" font-weight="bold">
     CUDA GPU Processing (Variance Ratios)
   </text>
   
-  <rect x="720" y="130" width="630" height="800" fill="#fff0e6" stroke="orange" stroke-width="3"/>
-  <text x="1035" y="155" text-anchor="middle" font-size="16" font-weight="bold">
+  <rect x="620" y="120" width="530" height="600" fill="#fff0e6" stroke="orange" stroke-width="2"/>
+  <text x="885" y="140" text-anchor="middle" font-size="14" font-weight="bold">
     SIMD CPU Processing (Autocorrelations)
   </text>
   
-  <!-- CUDA Side (Left) -->
-  <rect x="70" y="180" width="600" height="60" fill="#cce6ff" stroke="blue"/>
-  <text x="370" y="205" text-anchor="middle" font-size="12" font-weight="bold">
+  <!-- CUDA side details -->
+  <rect x="70" y="160" width="500" height="40" fill="#cce6ff" stroke="blue"/>
+  <text x="320" y="175" text-anchor="middle" font-size="11">
     vr_calc = cuda_lib.create_vr_calculator()
   </text>
-  <text x="370" y="225" text-anchor="middle" font-size="10">
-    Initializes 4x RTX 3070 Multi-GPU system
+  <text x="320" y="190" text-anchor="middle" font-size="10">
+    Initialize 4x RTX 3070 GPUs
   </text>
   
-  <!-- GPU distribution -->
-  <rect x="90" y="260" width="130" height="600" fill="#b3daff" stroke="blue"/>
-  <text x="155" y="280" text-anchor="middle" font-size="11" font-weight="bold">GPU 0</text>
-  <text x="155" y="295" text-anchor="middle" font-size="9">Horizons [2,5]</text>
+  <!-- 4 GPUs -->
+  <rect x="80" y="210" width="100" height="400" fill="#b3daff" stroke="blue"/>
+  <text x="130" y="230" text-anchor="middle" font-size="10" font-weight="bold">GPU 0</text>
+  <text x="130" y="245" text-anchor="middle" font-size="8">h=[2,5]</text>
   
-  <rect x="240" y="260" width="130" height="600" fill="#b3daff" stroke="blue"/>
-  <text x="305" y="280" text-anchor="middle" font-size="11" font-weight="bold">GPU 1</text>
-  <text x="305" y="295" text-anchor="middle" font-size="9">Horizons [10,20]</text>
+  <rect x="190" y="210" width="100" height="400" fill="#b3daff" stroke="blue"/>
+  <text x="240" y="230" text-anchor="middle" font-size="10" font-weight="bold">GPU 1</text>
+  <text x="240" y="245" text-anchor="middle" font-size="8">h=[10,20]</text>
   
-  <rect x="390" y="260" width="130" height="600" fill="#b3daff" stroke="blue"/>
-  <text x="455" y="280" text-anchor="middle" font-size="11" font-weight="bold">GPU 2</text>
-  <text x="455" y="295" text-anchor="middle" font-size="9">Horizons [50,100]</text>
+  <rect x="300" y="210" width="100" height="400" fill="#b3daff" stroke="blue"/>
+  <text x="350" y="230" text-anchor="middle" font-size="10" font-weight="bold">GPU 2</text>
+  <text x="350" y="245" text-anchor="middle" font-size="8">h=[50,100]</text>
   
-  <rect x="540" y="260" width="110" height="600" fill="#b3daff" stroke="blue"/>
-  <text x="595" y="280" text-anchor="middle" font-size="11" font-weight="bold">GPU 3</text>
-  <text x="595" y="295" text-anchor="middle" font-size="9">Horizon [200]</text>
+  <rect x="410" y="210" width="100" height="400" fill="#b3daff" stroke="blue"/>
+  <text x="460" y="230" text-anchor="middle" font-size="10" font-weight="bold">GPU 3</text>
+  <text x="460" y="245" text-anchor="middle" font-size="8">h=[200]</text>
   
-  <!-- GPU kernels for each market type -->
-  <text x="100" y="320" font-size="10" font-weight="bold">For each market:</text>
+  <!-- Market processing on GPUs -->
+  <rect x="90" y="270" width="80" height="60" fill="white" stroke="blue"/>
+  <text x="130" y="285" text-anchor="middle" font-size="8">Efficient Mkt</text>
+  <text x="130" y="300" text-anchor="middle" font-size="7">5 kernels</text>
+  <text x="130" y="315" text-anchor="middle" font-size="7">per horizon</text>
+  <text x="130" y="325" text-anchor="middle" font-size="7">VR ≈ 1.0</text>
   
-  <rect x="100" y="330" width="120" height="80" fill="white" stroke="blue"/>
-  <text x="160" y="345" text-anchor="middle" font-size="9">Efficient Market</text>
-  <text x="160" y="360" text-anchor="middle" font-size="8">computeHPeriodReturns</text>
-  <text x="160" y="375" text-anchor="middle" font-size="8">computeMeanKernel x2</text>
-  <text x="160" y="390" text-anchor="middle" font-size="8">computeVarianceWelford x2</text>
-  <text x="160" y="405" text-anchor="middle" font-size="8">VR = var_h/(h*var_1)</text>
+  <rect x="90" y="340" width="80" height="60" fill="white" stroke="blue"/>
+  <text x="130" y="355" text-anchor="middle" font-size="8">Mean Rev</text>
+  <text x="130" y="370" text-anchor="middle" font-size="7">φ=-0.6</text>
+  <text x="130" y="385" text-anchor="middle" font-size="7">VR &lt; 1.0</text>
+  <text x="130" y="395" text-anchor="middle" font-size="7">Mean reversion</text>
   
-  <rect x="100" y="420" width="120" height="80" fill="white" stroke="blue"/>
-  <text x="160" y="435" text-anchor="middle" font-size="9">Mean Reverting</text>
-  <text x="160" y="450" text-anchor="middle" font-size="8">Same 5 kernels</text>
-  <text x="160" y="465" text-anchor="middle" font-size="8">Different data</text>
-  <text x="160" y="480" text-anchor="middle" font-size="8">φ=-0.6 pattern</text>
-  <text x="160" y="495" text-anchor="middle" font-size="8">Results: VR&lt;1</text>
+  <rect x="90" y="410" width="80" height="60" fill="white" stroke="blue"/>
+  <text x="130" y="425" text-anchor="middle" font-size="8">Trending</text>
+  <text x="130" y="440" text-anchor="middle" font-size="7">φ=0.6</text>
+  <text x="130" y="455" text-anchor="middle" font-size="7">VR &gt; 1.0</text>
+  <text x="130" y="465" text-anchor="middle" font-size="7">Momentum</text>
   
-  <rect x="100" y="510" width="120" height="80" fill="white" stroke="blue"/>
-  <text x="160" y="525" text-anchor="middle" font-size="9">Trending</text>
-  <text x="160" y="540" text-anchor="middle" font-size="8">Same 5 kernels</text>
-  <text x="160" y="555" text-anchor="middle" font-size="8">φ=0.6 pattern</text>
-  <text x="160" y="570" text-anchor="middle" font-size="8">Results: VR&gt;1</text>
-  <text x="160" y="585" text-anchor="middle" font-size="8">Momentum detected</text>
+  <rect x="90" y="480" width="80" height="60" fill="white" stroke="blue"/>
+  <text x="130" y="495" text-anchor="middle" font-size="8">Vol Cluster</text>
+  <text x="130" y="510" text-anchor="middle" font-size="7">GARCH</text>
+  <text x="130" y="525" text-anchor="middle" font-size="7">VR ≈ 1.0</text>
+  <text x="130" y="535" text-anchor="middle" font-size="7">Heteroskedastic</text>
   
-  <rect x="100" y="600" width="120" height="80" fill="white" stroke="blue"/>
-  <text x="160" y="615" text-anchor="middle" font-size="9">Vol Clustering</text>
-  <text x="160" y="630" text-anchor="middle" font-size="8">GARCH pattern</text>
-  <text x="160" y="645" text-anchor="middle" font-size="8">Results: VR≈1</text>
-  <text x="160" y="660" text-anchor="middle" font-size="8">Efficient but</text>
-  <text x="160" y="675" text-anchor="middle" font-size="8">heteroskedastic</text>
-  
-  <!-- Performance metrics for GPU -->
-  <rect x="100" y="720" width="520" height="60" fill="#4d94ff" stroke="blue"/>
-  <text x="360" y="740" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
-    CUDA Performance per Market Type
+  <!-- GPU performance -->
+  <rect x="80" y="620" width="480" height="60" fill="#4d94ff" stroke="blue"/>
+  <text x="320" y="640" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    CUDA Performance
   </text>
-  <text x="200" y="755" text-anchor="middle" font-size="9" fill="white">
-    VR Time: ~2-5ms per market
+  <text x="320" y="655" text-anchor="middle" font-size="9" fill="white">
+    173K-280K points/ms aggregate across 4 GPUs
   </text>
-  <text x="360" y="755" text-anchor="middle" font-size="9" fill="white">
-    4 GPUs process 7 horizons
-  </text>
-  <text x="520" y="755" text-anchor="middle" font-size="9" fill="white">
-    35 kernel launches total
-  </text>
-  <text x="360" y="770" text-anchor="middle" font-size="9" fill="white">
-    Throughput: 173K-280K points/ms aggregate
+  <text x="320" y="670" text-anchor="middle" font-size="9" fill="white">
+    Output: VR arrays for dashboard left panel
   </text>
   
-  <!-- GPU results -->
-  <rect x="100" y="790" width="520" height="60" fill="#0066cc" stroke="blue"/>
-  <text x="360" y="810" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
-    GPU Output: Variance Ratio Arrays
-  </text>
-  <text x="360" y="825" text-anchor="middle" font-size="9" fill="white">
-    4 markets × 7 horizons = 28 VR values for dashboard left panel
-  </text>
-  <text x="360" y="840" text-anchor="middle" font-size="9" fill="white">
-    VR(h) = [VR(2), VR(5), VR(10), VR(20), VR(50), VR(100), VR(200)]
-  </text>
-  
-  <!-- SIMD Side (Right) -->
-  <rect x="740" y="180" width="580" height="60" fill="#ffe6cc" stroke="orange"/>
-  <text x="1030" y="205" text-anchor="middle" font-size="12" font-weight="bold">
+  <!-- SIMD side details -->
+  <rect x="640" y="160" width="490" height="40" fill="#ffe6cc" stroke="orange"/>
+  <text x="885" y="175" text-anchor="middle" font-size="11">
     acf_proc = simd_lib.create_autocorr_processor(8)
   </text>
-  <text x="1030" y="225" text-anchor="middle" font-size="10">
-    8 OpenMP threads with AVX2 (4 doubles/operation)
+  <text x="885" y="190" text-anchor="middle" font-size="10">
+    8 OpenMP threads with AVX2 (4 doubles/op)
   </text>
   
-  <!-- CPU thread distribution -->
-  <rect x="760" y="260" width="560" height="40" fill="#ffcc99" stroke="orange"/>
-  <text x="1040" y="275" text-anchor="middle" font-size="11" font-weight="bold">
-    48 CPU cores available, using 8 OpenMP threads
+  <!-- CPU threads and markets -->
+  <rect x="650" y="220" width="470" height="80" fill="#ffcc99" stroke="orange"/>
+  <text x="885" y="240" text-anchor="middle" font-size="11" font-weight="bold">
+    CPU Thread Distribution (8 of 48 cores used)
   </text>
-  <text x="1040" y="290" text-anchor="middle" font-size="10">
-    Each thread: AVX2 processes 4 doubles in parallel per instruction
-  </text>
+  <text x="670" y="260" font-size="9">Thread 0: Efficient Market ACF computation</text>
+  <text x="670" y="275" font-size="9">Thread 1: Mean Reverting ACF computation</text>
+  <text x="670" y="290" font-size="9">Thread 2: Trending ACF computation</text>
+  <text x="670" y="280" font-size="9">Thread 3: Volatility Clustering ACF</text>
   
-  <!-- SIMD processing for each market -->
-  <rect x="760" y="320" width="280" height="160" fill="white" stroke="orange"/>
-  <text x="900" y="340" text-anchor="middle" font-size="11" font-weight="bold">Thread Distribution</text>
-  <text x="780" y="360" font-size="9">Thread 0: Efficient Market ACF</text>
-  <text x="780" y="375" font-size="9">Thread 1: Mean Reverting ACF</text>
-  <text x="780" y="390" font-size="9">Thread 2: Trending ACF</text>
-  <text x="780" y="405" font-size="9">Thread 3: Volatility Clustering ACF</text>
-  <text x="780" y="420" font-size="9">Threads 4-7: Idle or load balancing</text>
-  <text x="900" y="440" text-anchor="middle" font-size="10" font-weight="bold">
-    Each thread computes 51 lags (ACF[0] to ACF[50])
-  </text>
-  <text x="900" y="455" text-anchor="middle" font-size="9">
-    computeMeanAVX2() → computeVarianceAVX2()
-  </text>
-  <text x="900" y="470" text-anchor="middle" font-size="9">
-    → computeCovarianceSIMD() for each lag
-  </text>
-  
-  <rect x="1060" y="320" width="260" height="160" fill="white" stroke="orange"/>
-  <text x="1190" y="340" text-anchor="middle" font-size="11" font-weight="bold">AVX2 Vector Operations</text>
-  <text x="1080" y="360" font-size="9">__m256d data_vec = </text>
-  <text x="1080" y="375" font-size="8">  _mm256_loadu_pd(&data[i])</text>
-  <text x="1080" y="390" font-size="9">4 doubles loaded simultaneously</text>
-  <text x="1080" y="410" font-size="9">__m256d result = </text>
-  <text x="1080" y="425" font-size="8">  _mm256_add_pd(vec1, vec2)</text>
-  <text x="1080" y="440" font-size="9">4 additions in single instruction</text>
-  <text x="1080" y="460" font-size="9">Memory bandwidth optimized</text>
-  <text x="1080" y="475" font-size="9">3-4x speedup over scalar</text>
+  <!-- AVX2 operations -->
+  <rect x="650" y="320" width="220" height="120" fill="white" stroke="orange"/>
+  <text x="760" y="340" text-anchor="middle" font-size="10" font-weight="bold">AVX2 Operations</text>
+  <text x="670" y="360" font-size="8">__m256d data_vec = </text>
+  <text x="670" y="375" font-size="7">  _mm256_loadu_pd(&data[i])</text>
+  <text x="670" y="390" font-size="8">4 doubles loaded at once</text>
+  <text x="670" y="410" font-size="8">__m256d result = </text>
+  <text x="670" y="425" font-size="7">  _mm256_add_pd(vec1, vec2)</text>
+  <text x="670" y="435" font-size="8">4 additions in 1 instruction</text>
   
   <!-- SIMD calculations -->
-  <rect x="760" y="500" width="560" height="120" fill="white" stroke="orange"/>
-  <text x="1040" y="520" text-anchor="middle" font-size="11" font-weight="bold">
-    SIMD Autocorrelation Calculations (per market type)
-  </text>
-  <text x="780" y="545" font-size="9">1. computeMeanAVX2(returns, n) → μ using vectorized summation</text>
-  <text x="780" y="560" font-size="9">2. computeVarianceAVX2(returns, n, μ) → σ² using vectorized (x-μ)²</text>
-  <text x="780" y="575" font-size="9">3. For lag k=1 to 50:</text>
-  <text x="800" y="590" font-size="8">   computeCovarianceSIMD(returns, n, k, μ) → Cov(r_t, r_{t-k})</text>
-  <text x="800" y="605" font-size="8">   ACF[k] = Cov(r_t, r_{t-k}) / σ² (autocorrelation coefficient)</text>
-  
-  <!-- SIMD performance -->
-  <rect x="760" y="640" width="560" height="60" fill="#ff9933" stroke="orange"/>
-  <text x="1040" y="660" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
-    SIMD Performance per Market Type
-  </text>
-  <text x="880" y="675" text-anchor="middle" font-size="9" fill="white">
-    ACF Time: ~1-3ms per market
-  </text>
-  <text x="1040" y="675" text-anchor="middle" font-size="9" fill="white">
-    8 threads × AVX2 acceleration
-  </text>
-  <text x="1200" y="675" text-anchor="middle" font-size="9" fill="white">
-    66K-234K points/ms
-  </text>
-  <text x="1040" y="690" text-anchor="middle" font-size="9" fill="white">
-    Could utilize more CPU cores for higher throughput
-  </text>
+  <rect x="890" y="320" width="230" height="120" fill="white" stroke="orange"/>
+  <text x="1005" y="340" text-anchor="middle" font-size="10" font-weight="bold">ACF Calculations</text>
+  <text x="910" y="360" font-size="8">1. computeMeanAVX2()</text>
+  <text x="920" y="375" font-size="7">Vectorized mean</text>
+  <text x="910" y="390" font-size="8">2. computeVarianceAVX2()</text>
+  <text x="920" y="405" font-size="7">Vectorized variance</text>
+  <text x="910" y="420" font-size="8">3. For each lag k:</text>
+  <text x="920" y="435" font-size="7">computeCovarianceSIMD(k)</text>
   
   <!-- SIMD results -->
-  <rect x="760" y="720" width="560" height="60" fill="#cc6600" stroke="orange"/>
-  <text x="1040" y="740" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
-    CPU Output: Autocorrelation Arrays
+  <rect x="650" y="460" width="470" height="100" fill="white" stroke="orange"/>
+  <text x="885" y="480" text-anchor="middle" font-size="11" font-weight="bold">
+    Autocorrelation Results per Market
   </text>
-  <text x="1040" y="755" text-anchor="middle" font-size="9" fill="white">
-    4 markets × 51 lags = 204 ACF values for dashboard right panel
+  <text x="670" y="500" font-size="9">Efficient Market: ACF ≈ 0 (no correlation)</text>
+  <text x="670" y="515" font-size="9">Mean Reverting: ACF[1] &lt; 0 (negative correlation)</text>
+  <text x="670" y="530" font-size="9">Trending: ACF[1] &gt; 0 (positive correlation)</text>
+  <text x="670" y="545" font-size="9">Vol Clustering: ACF ≈ 0 but different pattern</text>
+  
+  <!-- SIMD performance -->
+  <rect x="650" y="580" width="470" height="60" fill="#ff9933" stroke="orange"/>
+  <text x="885" y="600" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    SIMD Performance
   </text>
-  <text x="1040" y="770" text-anchor="middle" font-size="9" fill="white">
-    ACF(k) shows correlation between returns separated by k periods
+  <text x="885" y="615" text-anchor="middle" font-size="9" fill="white">
+    66K-234K points/ms using 8 threads + AVX2
+  </text>
+  <text x="885" y="630" text-anchor="middle" font-size="9" fill="white">
+    Output: ACF arrays for dashboard right panel
   </text>
   
-  <!-- Results combination -->
-  <rect x="50" y="940" width="1300" height="50" fill="#333333"/>
-  <text x="700" y="960" text-anchor="middle" font-size="14" fill="white" font-weight="bold">
-    Dashboard Creation: Combine GPU Variance Ratios + CPU Autocorrelations
+  <!-- Final combination -->
+  <rect x="50" y="740" width="1100" height="40" fill="#333333"/>
+  <text x="600" y="755" text-anchor="middle" font-size="12" fill="white" font-weight="bold">
+    Dashboard Creation: GPU Variance Ratios + CPU Autocorrelations
   </text>
-  <text x="350" y="975" text-anchor="middle" font-size="11" fill="white">
-    Left Panel: VR(h) from CUDA GPUs
+  <text x="300" y="770" text-anchor="middle" font-size="10" fill="white">
+    Left Panel: VR(h) from CUDA
   </text>
-  <text x="700" y="975" text-anchor="middle" font-size="11" fill="white">
-    OpenMP synchronization ensures both complete
+  <text x="600" y="770" text-anchor="middle" font-size="10" fill="white">
+    Synchronized results
   </text>
-  <text x="1050" y="975" text-anchor="middle" font-size="11" fill="white">
-    Right Panel: ACF(k) from SIMD CPUs
-  </text>
-  
-  <!-- Performance summary -->
-  <rect x="50" y="990" width="650" height="5" fill="blue"/>
-  <rect x="700" y="990" width="650" height="5" fill="orange"/>
-  
-  <text x="375" y="1007" text-anchor="middle" font-size="9" fill="blue" font-weight="bold">
-    CUDA: Memory-bound, 31.2GB total GPU memory
-  </text>
-  <text x="1025" y="1007" text-anchor="middle" font-size="9" fill="orange" font-weight="bold">
-    SIMD: Compute-bound, underutilized (8/48 cores)
+  <text x="900" y="770" text-anchor="middle" font-size="10" fill="white">
+    Right Panel: ACF(k) from SIMD
   </text>
 </svg>
