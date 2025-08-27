@@ -1,5 +1,34 @@
 # Full Demo: CUDA GPU + SIMD CPU Processing Flow
 
+## How cuda or simd impl is determined
+
+Based on the CUDA library implementation, the GPU and SIMD path is determined through runtime capability detection and compile-time feature flags that automatically select the optimal execution backend - the system checks available GPUs via cudaGetDeviceCount() for CUDA path selection, while SIMD path determination uses preprocessor macros (__AVX512F__, __AVX2__) to compile the highest available instruction set with fallback to scalar operations.
+
+# why VR is only caculated in cuda and Autocorellation in SIMD
+
+The separation isn't arbitrary - it reflects the computational characteristics and optimal hardware utilization for each algorithm:
+
+**CUDA handles Variance Ratios because:**
+- VR computation requires multiple independent variance calculations across different time horizons
+- Each horizon (h=2, 5, 10, 20, 50, 100) can be computed in parallel across different GPUs
+- The algorithm is embarrassingly parallel - thousands of h-period returns can be computed simultaneously
+- GPU's massive parallelism (2560+ cores per RTX 3070) excels at these independent calculations
+- Memory bandwidth-intensive operations (reading large return series) benefit from GPU's high-bandwidth memory
+
+**SIMD handles Autocorrelations because:**
+- ACF computation is inherently sequential for each lag (lag k depends on completing lag k-1 calculations)
+- The algorithm benefits more from vectorization than massive parallelism
+- AVX2/AVX-512 can process 4-8 doubles simultaneously, perfect for the dot-product operations in covariance calculations
+- CPU's better branch prediction and cache hierarchy suit the more complex control flow
+- OpenMP threading provides sufficient parallelism for the workload
+
+**The design choice also reflects practical constraints:**
+- GPU context switching overhead would hurt ACF's fine-grained sequential nature
+- CPU would be inefficient for VR's massively parallel variance calculations
+- This division maximizes utilization of both processing units simultaneously
+
+The implementation could theoretically do both on either platform, but this separation achieves optimal performance by matching algorithmic characteristics to hardware strengths.
+
 ## Input Data
 - 4 Market Types × 100K Returns Each
 - Efficient Market, Mean Reverting (φ=-0.6), Trending (φ=0.6), Volatility Clustering
@@ -90,4 +119,5 @@ Output: ACF arrays for dashboard RIGHT panel
 - **GPU Utilization**: Optimal - all 4 GPUs working on different horizons
 - **CPU Utilization**: Suboptimal - only 8/48 cores used  
 - **Memory**: GPU memory-bound, CPU could use more threads
+
 - **Performance**: Near-linear scaling across GPUs, underutilized CPU capacity
