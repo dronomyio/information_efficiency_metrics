@@ -1,0 +1,319 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#ffffff" stroke="#ccc" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="600" y="25" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#2c3e50">
+    computeHPeriodReturns() - Grid-Stride Loop Pattern
+  </text>
+  
+  <!-- Input data array visualization -->
+  <text x="50" y="60" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+    Input: returns[] array (n = 10 elements, h = 3)
+  </text>
+  
+  <!-- Returns array -->
+  <g id="returns-array">
+    <rect x="80" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="95" y="90" text-anchor="middle" font-size="9" fill="white">r0</text>
+    <text x="95" y="105" text-anchor="middle" font-size="8" fill="#666">i=0</text>
+    
+    <rect x="115" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="130" y="90" text-anchor="middle" font-size="9" fill="white">r1</text>
+    <text x="130" y="105" text-anchor="middle" font-size="8" fill="#666">i=1</text>
+    
+    <rect x="150" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="165" y="90" text-anchor="middle" font-size="9" fill="white">r2</text>
+    <text x="165" y="105" text-anchor="middle" font-size="8" fill="#666">i=2</text>
+    
+    <rect x="185" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="200" y="90" text-anchor="middle" font-size="9" fill="white">r3</text>
+    <text x="200" y="105" text-anchor="middle" font-size="8" fill="#666">i=3</text>
+    
+    <rect x="220" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="235" y="90" text-anchor="middle" font-size="9" fill="white">r4</text>
+    <text x="235" y="105" text-anchor="middle" font-size="8" fill="#666">i=4</text>
+    
+    <rect x="255" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="270" y="90" text-anchor="middle" font-size="9" fill="white">r5</text>
+    <text x="270" y="105" text-anchor="middle" font-size="8" fill="#666">i=5</text>
+    
+    <rect x="290" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="305" y="90" text-anchor="middle" font-size="9" fill="white">r6</text>
+    <text x="305" y="105" text-anchor="middle" font-size="8" fill="#666">i=6</text>
+    
+    <rect x="325" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="340" y="90" text-anchor="middle" font-size="9" fill="white">r7</text>
+    <text x="340" y="105" text-anchor="middle" font-size="8" fill="#666">i=7</text>
+    
+    <rect x="360" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="375" y="90" text-anchor="middle" font-size="9" fill="white">r8</text>
+    <text x="375" y="105" text-anchor="middle" font-size="8" fill="#666">i=8</text>
+    
+    <rect x="395" y="75" width="30" height="25" fill="#3498db" stroke="#2c3e50"/>
+    <text x="410" y="90" text-anchor="middle" font-size="9" fill="white">r9</text>
+    <text x="410" y="105" text-anchor="middle" font-size="8" fill="#666">i=9</text>
+  </g>
+  
+  <!-- Output explanation -->
+  <text x="450" y="90" font-family="Arial" font-size="12" fill="#2c3e50">
+    Output: h_returns[] has (n-h+1) = 8 elements
+  </text>
+  
+  <!-- Thread assignment visualization -->
+  <text x="50" y="140" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+    Thread Assignment (Example: 4 threads, Grid-Stride Loop)
+  </text>
+  
+  <!-- Key calculations -->
+  <rect x="50" y="155" width="500" height="60" fill="#ecf0f1" stroke="#2c3e50"/>
+  <text x="70" y="175" font-family="monospace" font-size="11" fill="#e74c3c">
+    tid = blockIdx.x * blockDim.x + threadIdx.x
+  </text>
+  <text x="70" y="190" font-family="monospace" font-size="11" fill="#e74c3c">
+    stride = blockDim.x * gridDim.x  // Total threads in grid
+  </text>
+  <text x="70" y="205" font-family="monospace" font-size="11" fill="#7f8c8d">
+    Loop: for (int i = tid; i &lt; n-h+1; i += stride)
+  </text>
+  
+  <!-- Thread work distribution -->
+  <text x="50" y="235" font-family="Arial" font-size="12" font-weight="bold" fill="#2c3e50">
+    Work Distribution (tid=0,1,2,3 with stride=4):
+  </text>
+  
+  <!-- Thread 0 work -->
+  <rect x="70" y="250" width="200" height="40" fill="#e74c3c" stroke="#2c3e50"/>
+  <text x="170" y="265" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    Thread 0 (tid=0)
+  </text>
+  <text x="170" y="280" text-anchor="middle" font-size="9" fill="white">
+    Processes: i=0, i=4 (if i&lt;8)
+  </text>
+  
+  <!-- Thread 1 work -->
+  <rect x="280" y="250" width="200" height="40" fill="#3498db" stroke="#2c3e50"/>
+  <text x="380" y="265" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    Thread 1 (tid=1)
+  </text>
+  <text x="380" y="280" text-anchor="middle" font-size="9" fill="white">
+    Processes: i=1, i=5 (if i&lt;8)
+  </text>
+  
+  <!-- Thread 2 work -->
+  <rect x="490" y="250" width="200" height="40" fill="#f39c12" stroke="#2c3e50"/>
+  <text x="590" y="265" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    Thread 2 (tid=2)
+  </text>
+  <text x="590" y="280" text-anchor="middle" font-size="9" fill="white">
+    Processes: i=2, i=6 (if i&lt;8)
+  </text>
+  
+  <!-- Thread 3 work -->
+  <rect x="700" y="250" width="200" height="40" fill="#9b59b6" stroke="#2c3e50"/>
+  <text x="800" y="265" text-anchor="middle" font-size="11" fill="white" font-weight="bold">
+    Thread 3 (tid=3)
+  </text>
+  <text x="800" y="280" text-anchor="middle" font-size="9" fill="white">
+    Processes: i=3, i=7 (if i&lt;8)
+  </text>
+  
+  <!-- Detailed computation for one thread -->
+  <text x="50" y="320" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+    Detailed View: Thread 0 Computing h_returns[0] and h_returns[4]
+  </text>
+  
+  <!-- First computation: i=0 -->
+  <rect x="70" y="340" width="400" height="80" fill="#fff5f5" stroke="#e74c3c" stroke-width="2"/>
+  <text x="270" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">
+    Iteration 1: i=0 (compute h_returns[0])
+  </text>
+  <text x="90" y="380" font-family="monospace" font-size="10" fill="#2c3e50">
+    sum = 0.0;
+  </text>
+  <text x="90" y="395" font-family="monospace" font-size="10" fill="#e74c3c">
+    for (j=0; j&lt;3; j++) sum += returns[0+j];
+  </text>
+  <text x="90" y="410" font-family="monospace" font-size="10" fill="#27ae60">
+    sum = returns[0] + returns[1] + returns[2] = r0+r1+r2
+  </text>
+  
+  <!-- Visual representation of summation -->
+  <g id="summation-visual-1">
+    <rect x="500" y="340" width="25" height="20" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="512" y="353" text-anchor="middle" font-size="8" fill="white">r0</text>
+    <text x="530" y="353" text-anchor="middle" font-size="12" fill="#2c3e50">+</text>
+    
+    <rect x="540" y="340" width="25" height="20" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="552" y="353" text-anchor="middle" font-size="8" fill="white">r1</text>
+    <text x="570" y="353" text-anchor="middle" font-size="12" fill="#2c3e50">+</text>
+    
+    <rect x="580" y="340" width="25" height="20" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="592" y="353" text-anchor="middle" font-size="8" fill="white">r2</text>
+    <text x="610" y="353" text-anchor="middle" font-size="12" fill="#2c3e50">=</text>
+    
+    <rect x="620" y="340" width="40" height="20" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="640" y="353" text-anchor="middle" font-size="7" fill="white">h_ret[0]</text>
+  </g>
+  
+  <!-- Second computation: i=4 -->
+  <rect x="70" y="430" width="400" height="80" fill="#f0f8ff" stroke="#3498db" stroke-width="2"/>
+  <text x="270" y="450" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">
+    Iteration 2: i=4 (compute h_returns[4])
+  </text>
+  <text x="90" y="470" font-family="monospace" font-size="10" fill="#2c3e50">
+    sum = 0.0;
+  </text>
+  <text x="90" y="485" font-family="monospace" font-size="10" fill="#3498db">
+    for (j=0; j&lt;3; j++) sum += returns[4+j];
+  </text>
+  <text x="90" y="500" font-family="monospace" font-size="10" fill="#27ae60">
+    sum = returns[4] + returns[5] + returns[6] = r4+r5+r6
+  </text>
+  
+  <!-- Visual representation of summation -->
+  <g id="summation-visual-2">
+    <rect x="500" y="450" width="25" height="20" fill="#3498db" stroke="#2c3e50"/>
+    <text x="512" y="463" text-anchor="middle" font-size="8" fill="white">r4</text>
+    <text x="530" y="463" text-anchor="middle" font-size="12" fill="#2c3e50">+</text>
+    
+    <rect x="540" y="450" width="25" height="20" fill="#3498db" stroke="#2c3e50"/>
+    <text x="552" y="463" text-anchor="middle" font-size="8" fill="white">r5</text>
+    <text x="570" y="463" text-anchor="middle" font-size="12" fill="#2c3e50">+</text>
+    
+    <rect x="580" y="450" width="25" height="20" fill="#3498db" stroke="#2c3e50"/>
+    <text x="592" y="463" text-anchor="middle" font-size="8" fill="white">r6</text>
+    <text x="610" y="463" text-anchor="middle" font-size="12" fill="#2c3e50">=</text>
+    
+    <rect x="620" y="450" width="40" height="20" fill="#27ae60" stroke="#2c3e50"/>
+    <text x="640" y="463" text-anchor="middle" font-size="7" fill="white">h_ret[4]</text>
+  </g>
+  
+  <!-- Complete output visualization -->
+  <text x="50" y="540" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+    Complete Output: h_returns[] array (8 elements)
+  </text>
+  
+  <g id="h-returns-array">
+    <!-- h_returns[0] -->
+    <rect x="80" y="555" width="50" height="30" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="105" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[0]</text>
+    <text x="105" y="580" text-anchor="middle" font-size="7" fill="white">r0+r1+r2</text>
+    <text x="105" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 0</text>
+    
+    <!-- h_returns[1] -->
+    <rect x="140" y="555" width="50" height="30" fill="#3498db" stroke="#2c3e50"/>
+    <text x="165" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[1]</text>
+    <text x="165" y="580" text-anchor="middle" font-size="7" fill="white">r1+r2+r3</text>
+    <text x="165" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 1</text>
+    
+    <!-- h_returns[2] -->
+    <rect x="200" y="555" width="50" height="30" fill="#f39c12" stroke="#2c3e50"/>
+    <text x="225" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[2]</text>
+    <text x="225" y="580" text-anchor="middle" font-size="7" fill="white">r2+r3+r4</text>
+    <text x="225" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 2</text>
+    
+    <!-- h_returns[3] -->
+    <rect x="260" y="555" width="50" height="30" fill="#9b59b6" stroke="#2c3e50"/>
+    <text x="285" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[3]</text>
+    <text x="285" y="580" text-anchor="middle" font-size="7" fill="white">r3+r4+r5</text>
+    <text x="285" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 3</text>
+    
+    <!-- h_returns[4] -->
+    <rect x="320" y="555" width="50" height="30" fill="#e74c3c" stroke="#2c3e50"/>
+    <text x="345" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[4]</text>
+    <text x="345" y="580" text-anchor="middle" font-size="7" fill="white">r4+r5+r6</text>
+    <text x="345" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 0</text>
+    
+    <!-- h_returns[5] -->
+    <rect x="380" y="555" width="50" height="30" fill="#3498db" stroke="#2c3e50"/>
+    <text x="405" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[5]</text>
+    <text x="405" y="580" text-anchor="middle" font-size="7" fill="white">r5+r6+r7</text>
+    <text x="405" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 1</text>
+    
+    <!-- h_returns[6] -->
+    <rect x="440" y="555" width="50" height="30" fill="#f39c12" stroke="#2c3e50"/>
+    <text x="465" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[6]</text>
+    <text x="465" y="580" text-anchor="middle" font-size="7" fill="white">r6+r7+r8</text>
+    <text x="465" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 2</text>
+    
+    <!-- h_returns[7] -->
+    <rect x="500" y="555" width="50" height="30" fill="#9b59b6" stroke="#2c3e50"/>
+    <text x="525" y="570" text-anchor="middle" font-size="8" fill="white">h_ret[7]</text>
+    <text x="525" y="580" text-anchor="middle" font-size="7" fill="white">r7+r8+r9</text>
+    <text x="525" y="595" text-anchor="middle" font-size="7" fill="#666">Thread 3</text>
+  </g>
+  
+  <!-- Performance optimizations section -->
+  <text x="50" y="630" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+    Performance Optimizations
+  </text>
+  
+  <rect x="50" y="645" width="1100" height="120" fill="#f8f9fa" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Grid-stride loop -->
+  <rect x="70" y="665" width="250" height="80" fill="#e8f4fd" stroke="#3498db"/>
+  <text x="195" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">
+    Grid-Stride Loop
+  </text>
+  <text x="90" y="705" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Handles arrays larger than grid size
+  </text>
+  <text x="90" y="720" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Each thread processes multiple elements
+  </text>
+  <text x="90" y="735" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Better memory locality and cache usage
+  </text>
+  
+  <!-- Loop unrolling -->
+  <rect x="340" y="665" width="250" height="80" fill="#fdf2e9" stroke="#e67e22"/>
+  <text x="465" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">
+    Loop Unrolling
+  </text>
+  <text x="360" y="705" font-family="Arial" font-size="10" fill="#2c3e50">
+    • #pragma unroll 8 hint to compiler
+  </text>
+  <text x="360" y="720" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Reduces loop overhead for small h
+  </text>
+  <text x="360" y="735" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Increases instruction-level parallelism
+  </text>
+  
+  <!-- Memory access pattern -->
+  <rect x="610" y="665" width="250" height="80" fill="#eafaf1" stroke="#27ae60"/>
+  <text x="735" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#196f3d">
+    Memory Access Pattern
+  </text>
+  <text x="630" y="705" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Sequential access to returns[] array
+  </text>
+  <text x="630" y="720" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Coalesced global memory reads
+  </text>
+  <text x="630" y="735" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Optimal memory bandwidth utilization
+  </text>
+  
+  <!-- Restrict pointers -->
+  <rect x="880" y="665" width="250" height="80" fill="#fdf2f2" stroke="#e74c3c"/>
+  <text x="1005" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">
+    __restrict__ Pointers
+  </text>
+  <text x="900" y="705" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Compiler assumes no pointer aliasing
+  </text>
+  <text x="900" y="720" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Enables aggressive optimizations
+  </text>
+  <text x="900" y="735" font-family="Arial" font-size="10" fill="#2c3e50">
+    • Better instruction scheduling
+  </text>
+  
+  <!-- Summary -->
+  <rect x="50" y="780" width="1100" height="20" fill="#2c3e50"/>
+  <text x="600" y="795" text-anchor="middle" font-family="Arial" font-size="12" fill="white" font-weight="bold">
+    Result: Efficient parallel computation of overlapping h-period returns for variance ratio analysis
+  </text>
+</svg>
