@@ -271,6 +271,12 @@ public:
                 // Compute h-period returns
                 int block_size = 256;
                 int grid_size = (h_size + block_size - 1) / block_size;
+
+		//check docs/computeVR.svg
+		//The grid size is calculated as (h_size + block_size - 1) / block_size 
+		// where h_size = n - h + 1, so for h=2: (100000-2+1 + 255)/256 = 99999/256 = 391 blocks, 
+		// while for h=5: (100000-5+1 + 255)/256 = 99996/256 = 390 blocks -
+	       // 	the different grid sizes reflect the decreasing number of h-period returns that can be computed as h increases.
                 computeHPeriodReturns<<<grid_size, block_size, 0, streams[gpu]>>>(
                     d_returns, d_h_returns, n, h
                 );
